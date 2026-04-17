@@ -130,7 +130,7 @@ router.post('/:otherUserId', auth_1.authMiddleware, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
 });
-router.get('/', auth_1.authMiddleware, async (req, res) => {
+router.get('/conversations', auth_1.authMiddleware, async (req, res) => {
     try {
         const currentUserId = req.user.userId;
         console.log('Getting conversations for user:', currentUserId);
