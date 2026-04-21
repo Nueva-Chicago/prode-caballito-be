@@ -66,6 +66,76 @@ router.get('/my-subscriptions', auth_1.authMiddleware, async (req, res) => {
     }
 });
 
+// Full comms test: push + email + WhatsApp — returns per-channel result
+router.post('/test-all', auth_1.authMiddleware, async (req, res) => {
+    const userId = req.user.userId;
+    const results = { push: null, email: null, whatsapp: null };
+
+    // Get user info
+    const userRes = await connection_1.db.query(
+        'SELECT email, nombre, whatsapp_number, whatsapp_consent FROM users WHERE id = $1',
+        [userId]
+    );
+    if (userRes.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+    }
+    const user = userRes.rows[0];
+
+    // Push
+    try {
+        const subsRes = await connection_1.db.query(
+            'SELECT id FROM push_subscriptions WHERE user_id = $1', [userId]
+        );
+        if (subsRes.rows.length === 0) {
+            results.push = { ok: false, error: 'Sin suscripciones push activas — activá desde Perfil' };
+        } else {
+            const { pushToUser } = require('../services/push');
+            await pushToUser(userId, {
+                title: '🔔 Test completo de notificaciones',
+                body: 'Push ✓ — verificando email y WhatsApp...',
+                url: '/',
+                icon: '/favicon.svg',
+            });
+            results.push = { ok: true, subscriptions: subsRes.rows.length };
+        }
+    } catch (e) {
+        results.push = { ok: false, error: e.message };
+    }
+
+    // Email
+    try {
+        const { sendEmail } = require('../services/email');
+        await sendEmail({
+            to: user.email,
+            subject: '🔔 Test de notificaciones — PRODE Caballito',
+            html: `<p>Hola ${user.nombre}, este es un email de prueba del sistema de notificaciones. Si lo recibís, el canal de email funciona correctamente.</p>`,
+        });
+        results.email = { ok: true, to: user.email };
+    } catch (e) {
+        results.email = { ok: false, to: user.email, error: e.message };
+    }
+
+    // WhatsApp
+    try {
+        if (!user.whatsapp_number) {
+            results.whatsapp = { ok: false, error: 'Sin número de WhatsApp configurado en Perfil' };
+        } else if (!user.whatsapp_consent) {
+            results.whatsapp = { ok: false, error: 'Consentimiento WhatsApp no activado en Perfil' };
+        } else {
+            const { sendWhatsApp } = require('../services/whatsapp');
+            await sendWhatsApp({
+                to: user.whatsapp_number,
+                body: '🔔 Test de notificaciones PRODE Caballito — si ves esto, WhatsApp funciona correctamente.',
+            });
+            results.whatsapp = { ok: true, to: user.whatsapp_number };
+        }
+    } catch (e) {
+        results.whatsapp = { ok: false, to: user.whatsapp_number, error: e.message };
+    }
+
+    res.json({ success: true, data: results });
+});
+
 // Send a test push to the authenticated user's own subscriptions
 router.post('/test', auth_1.authMiddleware, async (req, res) => {
     try {
