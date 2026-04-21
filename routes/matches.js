@@ -6,6 +6,8 @@ const auth_1 = require("../middleware/auth");
 const validation_1 = require("../middleware/validation");
 const scoring_1 = require("../services/scoring");
 const email_1 = require("../services/email");
+const { sendWhatsApp } = require("../services/whatsapp");
+const { pushToUser, pushToAll } = require("../services/push");
 const tournamentRanking_1 = require("../services/tournamentRanking");
 const router = (0, express_1.Router)();
 router.get('/', async (req, res) => {
@@ -76,11 +78,11 @@ router.get('/:id', validation_1.uuidParam, async (req, res) => {
 });
 router.post('/', auth_1.authMiddleware, auth_1.requireAdmin, validation_1.matchValidation, async (req, res) => {
     try {
-        const { home_team, away_team, start_time, halftime_minutes, time_cutoff, planilla_id, tournament_id } = req.body;
+        const { home_team, away_team, home_team_pt, away_team_pt, start_time, halftime_minutes, time_cutoff, planilla_id, tournament_id, sede, grupo, jornada } = req.body;
         const cutoffTime = time_cutoff || new Date(new Date(start_time).getTime() - 30 * 60 * 1000);
-        const result = await connection_1.db.query(`INSERT INTO matches (home_team, away_team, start_time, halftime_minutes, time_cutoff, planilla_id, tournament_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`, [home_team, away_team, start_time, halftime_minutes || 15, cutoffTime, planilla_id || null, tournament_id || null]);
+        const result = await connection_1.db.query(`INSERT INTO matches (home_team, away_team, home_team_pt, away_team_pt, start_time, halftime_minutes, time_cutoff, planilla_id, tournament_id, sede, grupo, jornada)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       RETURNING *`, [home_team, away_team, home_team_pt || null, away_team_pt || null, start_time, halftime_minutes || 15, cutoffTime, planilla_id || null, tournament_id || null, sede || null, grupo || null, jornada || null]);
         await connection_1.db.query(`INSERT INTO audit_log (user_id, action, entity_type, entity_id, new_value, ip_address, user_agent) 
        VALUES ($1, 'match_create', 'matches', $2, $3, $4, $5)`, [req.user.userId, result.rows[0].id, JSON.stringify(req.body), req.ip, req.headers['user-agent']]);
         res.status(201).json({ success: true, data: result.rows[0] });
@@ -93,22 +95,27 @@ router.post('/', auth_1.authMiddleware, auth_1.requireAdmin, validation_1.matchV
 router.put('/:id', auth_1.authMiddleware, auth_1.requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { home_team, away_team, start_time, halftime_minutes, time_cutoff, estado, finished, tournament_id } = req.body;
+        const { home_team, away_team, home_team_pt, away_team_pt, start_time, halftime_minutes, time_cutoff, estado, finished, tournament_id, sede, grupo, jornada } = req.body;
         const oldResult = await connection_1.db.query('SELECT * FROM matches WHERE id = $1', [id]);
         if (oldResult.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'Partido no encontrado' });
         }
-        const result = await connection_1.db.query(`UPDATE matches SET 
+        const result = await connection_1.db.query(`UPDATE matches SET
         home_team = COALESCE($1, home_team),
         away_team = COALESCE($2, away_team),
-        start_time = COALESCE($3, start_time),
-        halftime_minutes = COALESCE($4, halftime_minutes),
-        time_cutoff = COALESCE($5, time_cutoff),
-        estado = COALESCE($6, estado),
-        finished = COALESCE($7, finished),
-        tournament_id = COALESCE($8, tournament_id)
-       WHERE id = $9
-       RETURNING *`, [home_team, away_team, start_time, halftime_minutes, time_cutoff, estado, finished, tournament_id, id]);
+        home_team_pt = COALESCE($3, home_team_pt),
+        away_team_pt = COALESCE($4, away_team_pt),
+        start_time = COALESCE($5, start_time),
+        halftime_minutes = COALESCE($6, halftime_minutes),
+        time_cutoff = COALESCE($7, time_cutoff),
+        estado = COALESCE($8, estado),
+        finished = COALESCE($9, finished),
+        tournament_id = COALESCE($10, tournament_id),
+        sede = COALESCE($11, sede),
+        grupo = COALESCE($12, grupo),
+        jornada = COALESCE($13, jornada)
+       WHERE id = $14
+       RETURNING *`, [home_team, away_team, home_team_pt, away_team_pt, start_time, halftime_minutes, time_cutoff, estado, finished, tournament_id, sede, grupo, jornada, id]);
         await connection_1.db.query(`INSERT INTO audit_log (user_id, action, entity_type, entity_id, old_value, new_value, ip_address, user_agent) 
        VALUES ($1, 'match_update', 'matches', $2, $3, $4, $5, $6)`, [req.user.userId, id, JSON.stringify(oldResult.rows[0]), JSON.stringify(result.rows[0]), req.ip, req.headers['user-agent']]);
         res.json({ success: true, data: result.rows[0] });
@@ -126,7 +133,16 @@ router.post('/:matchId/result', auth_1.authMiddleware, auth_1.requireAdmin, vali
             return res.status(404).json({ success: false, error: 'Partido no encontrado' });
         }
         const match = matchResult.rows[0];
-        await connection_1.db.query(`UPDATE matches SET 
+
+        // Guardar líder anterior antes de recalcular
+        const prevLeaderResult = await connection_1.db.query(
+            `SELECT r.user_id, u.nombre, u.whatsapp_number, u.whatsapp_consent
+             FROM ranking r JOIN users u ON r.user_id = u.id
+             WHERE r.position = 1 LIMIT 1`
+        );
+        const prevLeader = prevLeaderResult.rows[0] || null;
+
+        await connection_1.db.query(`UPDATE matches SET
         resultado_local = $1,
         resultado_visitante = $2,
         estado = 'finished',
@@ -142,10 +158,107 @@ router.post('/:matchId/result', auth_1.authMiddleware, auth_1.requireAdmin, vali
            bonus_aplicado = $4,
            detalle_json = $5`, [bet.planilla_id, matchId, score.puntos, score.bonus, JSON.stringify(score.detalle)]);
         }
-        await connection_1.db.query(`INSERT INTO audit_log (user_id, action, entity_type, entity_id, new_value, ip_address, user_agent) 
+        await connection_1.db.query(`INSERT INTO audit_log (user_id, action, entity_type, entity_id, new_value, ip_address, user_agent)
        VALUES ($1, 'result_published', 'matches', $2, $3, $4, $5)`, [req.user.userId, matchId, JSON.stringify({ resultado_local, resultado_visitante }), req.ip, req.headers['user-agent']]);
         await actualizarRanking();
-        
+
+        // Notificaciones post-resultado (best-effort, no bloquean la respuesta)
+        setImmediate(async () => {
+            try {
+                // Obtener ranking actualizado para posiciones
+                const rankingRows = await connection_1.db.query(
+                    `SELECT r.user_id, r.position, r.puntos_totales,
+                            u.email, u.nombre, u.whatsapp_number, u.whatsapp_consent
+                     FROM ranking r JOIN users u ON r.user_id = u.id
+                     ORDER BY r.position ASC`
+                );
+                const rankingMap = {};
+                for (const row of rankingRows.rows) rankingMap[row.user_id] = row;
+
+                // Detectar nuevo líder
+                const newLeader = rankingRows.rows[0] || null;
+                if (newLeader && prevLeader && newLeader.user_id !== prevLeader.user_id) {
+                    // Email al nuevo líder
+                    await email_1.sendNewLeaderEmail({
+                        userEmail: newLeader.email,
+                        userName: newLeader.nombre,
+                        puntos: newLeader.puntos_totales,
+                        homeTeam: match.home_team,
+                        awayTeam: match.away_team,
+                        resultLocal: resultado_local,
+                        resultVisitante: resultado_visitante,
+                    }).catch(e => console.error('Email new leader error:', e.message));
+                    // Push al nuevo líder
+                    await pushToUser(newLeader.user_id, {
+                        title: '🔥 ¡Sos el nuevo líder!',
+                        body: `Con ${newLeader.puntos_totales} pts estás en el puesto #1 — ¡no lo sueltes!`,
+                        url: '/ranking',
+                        icon: '/favicon.svg',
+                    }).catch(e => console.error('[push] new leader error:', e.message));
+                    // WhatsApp al nuevo líder
+                    if (newLeader.whatsapp_number && newLeader.whatsapp_consent) {
+                        await sendWhatsApp({
+                            to: newLeader.whatsapp_number,
+                            body: `🔥 ¡Sos el nuevo líder del PRODE Caballito!\nCon ${newLeader.puntos_totales} puntos estás en el puesto #1.\n\n¡No lo sueltes! 👉 prodecaballito.com/ranking`,
+                        }).catch(e => console.error('WA new leader error:', e.message));
+                    }
+                }
+
+                // Email + WhatsApp por resultado a cada usuario con apuesta
+                for (const bet of betsResult.rows) {
+                    try {
+                        const score = (0, scoring_1.calcularPuntaje)(
+                            { goles_local: bet.goles_local, goles_visitante: bet.goles_visitante },
+                            { resultado_local, resultado_visitante }
+                        );
+                        // Obtener user_id desde planilla
+                        const planillaRes = await connection_1.db.query(
+                            'SELECT user_id FROM planillas WHERE id = $1', [bet.planilla_id]
+                        );
+                        if (planillaRes.rows.length === 0) continue;
+                        const userId = planillaRes.rows[0].user_id;
+                        const userRanking = rankingMap[userId];
+                        if (!userRanking) continue;
+
+                        // Email
+                        await email_1.sendResultEmail({
+                            userEmail: userRanking.email,
+                            userName: userRanking.nombre,
+                            homeTeam: match.home_team,
+                            awayTeam: match.away_team,
+                            resultLocal: resultado_local,
+                            resultVisitante: resultado_visitante,
+                            betLocal: bet.goles_local,
+                            betVisitante: bet.goles_visitante,
+                            puntos: score.puntos,
+                            rankingPos: userRanking.position,
+                        }).catch(e => console.error(`Result email error for ${userId}:`, e.message));
+
+                        // WhatsApp
+                        if (userRanking.whatsapp_number && userRanking.whatsapp_consent) {
+                            const betLine = `🎯 Tu pronóstico: ${bet.goles_local}-${bet.goles_visitante} → +${score.puntos}pts`;
+                            const msg = `⚽ ${match.home_team} ${resultado_local}-${resultado_visitante} ${match.away_team}\n\n${betLine}\n🏆 Estás #${userRanking.position} en el ranking\n\n👉 prodecaballito.com/ranking`;
+                            await sendWhatsApp({ to: userRanking.whatsapp_number, body: msg })
+                                .catch(e => console.error(`Result WA error for ${userId}:`, e.message));
+                        }
+                    } catch(betErr) {
+                        console.error('Result notification error for bet:', betErr.message);
+                    }
+                }
+                // Push a todos (resultado publicado)
+                await pushToAll({
+                    title: `⚽ ${match.home_team} ${resultado_local}–${resultado_visitante} ${match.away_team}`,
+                    body: 'Resultado publicado — mirá cuántos puntos sumaste',
+                    url: '/ranking',
+                    icon: '/favicon.svg',
+                }).catch(e => console.error('[push] broadcast error:', e.message));
+
+                console.log(`[result-notif] match=${matchId} bets=${betsResult.rows.length}`);
+            } catch(notifErr) {
+                console.error('[result-notif] error:', notifErr.message);
+            }
+        });
+
         // Recalculate tournament ranking if match belongs to tournament
         if (match.tournament_id) {
             await (0, tournamentRanking_1.recalculateTournamentRanking)(match.tournament_id);
