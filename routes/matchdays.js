@@ -558,9 +558,9 @@ router.get('/:id/reactions', async (req, res) => {
 /**
  * POST /matchdays/test-winner-notification   (auth required)
  * Body: { matchday_name?, points? }
- * Invoca processWinnerNotification en modo aislado — manda la carta FIFA
- * SOLO al email del usuario autenticado (target_email se ignora para
- * prevenir abuso). Útil para testear el pipeline OpenAI + imagemail.
+ * Corre processWinnerNotification inline (fire-and-forget) — manda la carta
+ * FIFA SOLO al email del usuario autenticado. Responde 200 inmediato;
+ * Lambda mantiene la ejecución viva hasta que la promesa termine.
  */
 router.post('/test-winner-notification', auth_1.authMiddleware, async (req, res) => {
   try {
@@ -572,7 +572,6 @@ router.post('/test-winner-notification', auth_1.authMiddleware, async (req, res)
       return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
     }
     const me = userRes.rows[0];
-    // Hardcoded al email del user autenticado — evita abuso como vector de spam
     const targetEmail  = me.email;
     const matchdayName = req.body.matchday_name || 'Fecha de Prueba';
     const points       = typeof req.body.points === 'number' ? req.body.points : 42;
@@ -580,24 +579,13 @@ router.post('/test-winner-notification', auth_1.authMiddleware, async (req, res)
     const winner  = { user_id: me.id, user_name: me.nombre, user_avatar: me.foto_url || null, points };
     const matchday = { id: '00000000-0000-0000-0000-000000000000', name: matchdayName, tournament_id: null };
 
-    const AWS    = require('aws-sdk');
-    const lambda = new AWS.Lambda({ region: process.env.AWS_REGION || 'us-east-1' });
-    await lambda.invoke({
-      FunctionName:   process.env.AWS_LAMBDA_FUNCTION_NAME || 'prode-api',
-      InvocationType: 'Event',
-      Payload: JSON.stringify({
-        source: 'winner-notification',
-        winner,
-        matchday,
-        winnerEmail: targetEmail,
-        allEmails:   [targetEmail],
-      }),
-    }).promise();
+    processWinnerNotification(winner, matchday, targetEmail, [targetEmail])
+      .catch(e => console.error('test-winner-notification bg error:', e));
 
     res.json({
       success: true,
       data: {
-        message:   'winner-notification invocado async — revisá CloudWatch + bandeja de entrada',
+        message:   'winner-notification disparado inline — revisá CloudWatch + bandeja de entrada en ~30-60s',
         winner,
         matchday,
         recipient: targetEmail,
