@@ -5,6 +5,7 @@ const connection_1 = require("../db/connection");
 const auth_1 = require("../middleware/auth");
 const scoring_1 = require("../services/scoring");
 const https = require("https");
+const { sendWhatsApp } = require("../services/whatsapp");
 const router = (0, express_1.Router)();
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -38,6 +39,7 @@ function openAiPost(path, body) {
 
 async function processWinnerNotification(winner, matchday, winnerEmail, allEmails = []) {
   try {
+    // 1. Find top scorers with GPT-4o (null = not found)
     let scorerNames = null;
     try {
       const scorersRes = await openAiPost('/v1/chat/completions', {
@@ -62,6 +64,9 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
     ];
     const motivational = MOTIVATIONAL[Math.floor(Math.random() * MOTIVATIONAL.length)];
 
+    // 2. Generate FIFA card — use Responses API with image_generation tool when avatar is available
+    //    so the model can see the actual face and reproduce it on the card.
+    //    Falls back to DALL-E 3 (text-only) when there is no avatar.
     const cardPrompt = `Create a FIFA Ultimate Team player card, ultra high quality digital art style.
 - IMPORTANT: use the face and physical appearance of the person shown in the provided photo as the player's face on the card. Reproduce their likeness faithfully.
 - Golden elite card with shiny gradient background and geometric patterns.
@@ -74,10 +79,11 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
 - A fan in the background holds a banner that reads '¡CAMPEÓN!' and Maradona hands the player a trophy.
 - Ultra-detailed, official FIFA game aesthetic, glossy finish.`;
 
-    let imageUri = null;
+    let imageUri = null; // will be a URL or a data-URI (base64)
 
     if (winner.user_avatar) {
       try {
+        // Responses API: model sees the avatar image and generates the card with the real face
         const respRes = await openAiPost('/v1/responses', {
           model: 'gpt-4o',
           input: [{
@@ -102,6 +108,7 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
       }
     }
 
+    // Fallback: DALL-E 3 (no face reference, purely text-driven)
     if (!imageUri) {
       const imageRes = await openAiPost('/v1/images/generations', {
         model: 'dall-e-3',
@@ -117,6 +124,7 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
 
     if (!imageUri) throw new Error('No image generated');
 
+    // 3. Send email to all recipients
     const recipients = allEmails.length > 0 ? allEmails : [winnerEmail];
     console.log(`Sending to ${recipients.length} recipients`);
 
@@ -155,6 +163,47 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
     }
 
     console.log('Winner notification complete — all emails sent');
+
+    // WhatsApp broadcast a todos los usuarios con consent
+    try {
+        const waUsers = await connection_1.db.query(
+            `SELECT whatsapp_number FROM users WHERE whatsapp_number IS NOT NULL AND whatsapp_consent = true`
+        );
+        const scorerLine = scorerNames ? `Goleadores: ${scorerNames}` : '';
+        const waMsg = `🏆 ¡${winner.user_name} ganó ${matchday.name}!\nCon ${winner.points} puntos exactos.${scorerLine ? '\n' + scorerLine : ''}\n\n👉 prodecaballito.com/ranking`;
+        for (const u of waUsers.rows) {
+            await sendWhatsApp({ to: u.whatsapp_number, body: waMsg })
+                .catch(e => console.error(`Winner WA error for ${u.whatsapp_number}:`, e.message));
+        }
+        console.log(`Winner WA sent to ${waUsers.rows.length} users`);
+    } catch(waErr) {
+        console.error('Winner WA broadcast error:', waErr.message);
+    }
+
+    // Push notification: ganador recibe notificación personal, resto broadcast
+    try {
+        const { pushToUser, pushToAll } = require('../services/push');
+        // Push al ganador (personal)
+        await pushToUser(winner.user_id, {
+            title: `🏆 ¡Ganaste ${matchday.name}!`,
+            body: `${winner.points} puntos — ¡Sos el crack de la fecha!`,
+            url: '/ranking',
+            icon: '/favicon.svg',
+        }).catch(e => console.error('Push winner error:', e.message));
+
+        // Push broadcast al resto (anuncio)
+        const scorerLine2 = scorerNames ? ` · ${scorerNames}` : '';
+        await pushToAll({
+            title: `🏆 ${winner.user_name} ganó ${matchday.name}`,
+            body: `Con ${winner.points} puntos${scorerLine2}`,
+            url: '/ranking',
+            icon: '/favicon.svg',
+        }).catch(e => console.error('Push broadcast error:', e.message));
+
+        console.log('Winner push notifications sent');
+    } catch(pushErr) {
+        console.error('Winner push error:', pushErr.message);
+    }
   } catch(err) {
     console.error('processWinnerNotification error:', err.message);
   }
@@ -163,8 +212,12 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/**
+ * Auto-create (or find) a matchday record for a given tournament + date.
+ * Name is "Fecha DD/MM" unless one already exists.
+ */
 async function ensureMatchday(tournamentId, matchDate) {
-  const dateStr = matchDate.toISOString().split('T')[0];
+  const dateStr = matchDate.toISOString().split('T')[0]; // YYYY-MM-DD
   const existing = await connection_1.db.query(
     'SELECT * FROM matchdays WHERE tournament_id = $1 AND match_date = $2',
     [tournamentId, dateStr]
@@ -186,11 +239,17 @@ async function ensureMatchday(tournamentId, matchDate) {
   return res.rows[0];
 }
 
+/**
+ * Core recalculation logic for a single matchday.
+ * Idempotent — running twice on the same matchday produces the same result.
+ */
 async function recalcMatchday(matchdayId) {
+  // 1. Get matchday info
   const mdRes = await connection_1.db.query('SELECT * FROM matchdays WHERE id = $1', [matchdayId]);
   if (mdRes.rows.length === 0) throw new Error('Matchday not found');
   const matchday = mdRes.rows[0];
 
+  // 2. Get all FINISHED matches for this tournament on this date
   const matchesRes = await connection_1.db.query(
     `SELECT m.id, m.resultado_local, m.resultado_visitante
      FROM matches m
@@ -205,6 +264,7 @@ async function recalcMatchday(matchdayId) {
 
   const matchIds = dayMatches.map(m => m.id);
 
+  // 3. Get all bets for those matches, grouped by planilla
   const betsRes = await connection_1.db.query(
     `SELECT b.planilla_id, b.match_id, b.goles_local, b.goles_visitante,
             p.user_id, u.nombre AS user_name, u.foto_url AS user_avatar
@@ -215,9 +275,11 @@ async function recalcMatchday(matchdayId) {
     [matchIds]
   );
 
+  // 4. Build a result map for quick lookup
   const resultMap = {};
   for (const m of dayMatches) resultMap[m.id] = m;
 
+  // 5. Sum points per planilla
   const planillaPoints = {};
   for (const bet of betsRes.rows) {
     const match = resultMap[bet.match_id];
@@ -241,6 +303,7 @@ async function recalcMatchday(matchdayId) {
   const rows = Object.values(planillaPoints);
   if (rows.length === 0) return { matchday, updated: 0 };
 
+  // 6. Sort by points DESC and assign RANK (ties share rank)
   rows.sort((a, b) => b.points - a.points);
   let currentRank = 1;
   for (let i = 0; i < rows.length; i++) {
@@ -249,6 +312,7 @@ async function recalcMatchday(matchdayId) {
     rows[i].is_winner = currentRank === 1;
   }
 
+  // 7. UPSERT all rows into scores_by_matchday (idempotent)
   for (const r of rows) {
     await connection_1.db.query(
       `INSERT INTO scores_by_matchday
@@ -265,9 +329,11 @@ async function recalcMatchday(matchdayId) {
     );
   }
 
+  // 8. Notify all bettors async (fire-and-forget via Lambda self-invocation)
   const winner = rows.find(r => r.is_winner);
   if (winner) {
     try {
+      // Fetch emails for ALL participants + winner in one query
       const allUserIds = rows.map(r => r.user_id);
       const emailsRes = await connection_1.db.query(
         `SELECT id, email FROM users WHERE id = ANY($1::uuid[]) AND email IS NOT NULL AND email != ''`,
@@ -303,6 +369,10 @@ async function recalcMatchday(matchdayId) {
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
+/**
+ * GET /matchdays?tournament_id=xxx
+ * List all matchdays for a tournament, with winner info.
+ */
 router.get('/', async (req, res) => {
   try {
     const { tournament_id } = req.query;
@@ -332,6 +402,10 @@ router.get('/', async (req, res) => {
   }
 });
 
+/**
+ * GET /matchdays/:id/ranking
+ * Full ranking for a specific matchday.
+ */
 router.get('/:id/ranking', async (req, res) => {
   try {
     const { id } = req.params;
@@ -354,6 +428,10 @@ router.get('/:id/ranking', async (req, res) => {
   }
 });
 
+/**
+ * GET /matchdays/user/:userId?tournament_id=xxx
+ * Matchday history + won dates for a user.
+ */
 router.get('/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -380,6 +458,10 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
+/**
+ * GET /matchdays/me?tournament_id=xxx   (requires auth)
+ * Matchday history for the authenticated user.
+ */
 router.get('/me', auth_1.authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -406,6 +488,11 @@ router.get('/me', auth_1.authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * POST /matchdays/recalculate   (admin only)
+ * Body: { tournament_id, match_date } OR { matchday_id }
+ * Trigger (re)calculation for a specific date. Idempotent.
+ */
 router.post('/recalculate', auth_1.authMiddleware, async (req, res) => {
   try {
     if (req.user.rol !== 'admin') {
@@ -431,6 +518,10 @@ router.post('/recalculate', auth_1.authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * POST /matchdays/recalculate-all   (admin only)
+ * Recalculate all matchdays for a tournament from scratch.
+ */
 router.post('/recalculate-all', auth_1.authMiddleware, async (req, res) => {
   try {
     if (req.user.rol !== 'admin') {
@@ -441,6 +532,7 @@ router.post('/recalculate-all', auth_1.authMiddleware, async (req, res) => {
       return res.status(400).json({ success: false, error: 'tournament_id requerido' });
     }
 
+    // Get all distinct dates with finished matches for this tournament
     const datesRes = await connection_1.db.query(
       `SELECT DISTINCT DATE(start_time AT TIME ZONE 'America/Argentina/Buenos_Aires') AS match_date
        FROM matches
@@ -465,6 +557,14 @@ router.post('/recalculate-all', auth_1.authMiddleware, async (req, res) => {
 
 const ALLOWED_EMOJIS = ['👏', '❤️', '🔥', '😮', '😂'];
 
+/**
+ * POST /matchdays/:id/react   (auth required)
+ * Body: { emoji: '👏' | '❤️' | '🔥' | '😮' | '😂' }
+ * - Same emoji as current → remove reaction
+ * - Different emoji → switch to new emoji
+ * - No current reaction → add
+ * Returns { userReaction: string|null, reactions: { emoji: count } }
+ */
 router.post('/:id/react', auth_1.authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
@@ -487,17 +587,20 @@ router.post('/:id/react', auth_1.authMiddleware, async (req, res) => {
 
     let userReaction = null;
     if (existing.rows.length > 0 && existing.rows[0].emoji === emoji) {
+      // Same emoji → remove
       await connection_1.db.query(
         'DELETE FROM matchday_reactions WHERE matchday_id = $1 AND user_id = $2',
         [id, userId]
       );
     } else if (existing.rows.length > 0) {
+      // Different emoji → update
       await connection_1.db.query(
         'UPDATE matchday_reactions SET emoji = $3 WHERE matchday_id = $1 AND user_id = $2',
         [id, userId, emoji]
       );
       userReaction = emoji;
     } else {
+      // No reaction → insert
       await connection_1.db.query(
         'INSERT INTO matchday_reactions (matchday_id, user_id, emoji) VALUES ($1, $2, $3) ON CONFLICT (matchday_id, user_id) DO UPDATE SET emoji = $3',
         [id, userId, emoji]
@@ -519,6 +622,10 @@ router.post('/:id/react', auth_1.authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * GET /matchdays/:id/reactions   (optional auth)
+ * Returns { reactions: { emoji: count }, userReaction: string|null }
+ */
 router.get('/:id/reactions', async (req, res) => {
   try {
     const { id } = req.params;
@@ -557,55 +664,40 @@ router.get('/:id/reactions', async (req, res) => {
 
 /**
  * POST /matchdays/test-email-only   (auth required)
- * Manda un email de prueba al user autenticado con una imagen pública
- * fija. Síncrono — surface errores en la respuesta HTTP. Sirve para
- * aislar si el problema está en OpenAI/Lambda o en imagemail/SES.
+ * Sends a test email with a public image — no OpenAI involved.
+ * Use this to verify SES/imagemail works before testing the full card pipeline.
  */
 router.post('/test-email-only', auth_1.authMiddleware, async (req, res) => {
   try {
     const userRes = await connection_1.db.query(
-      'SELECT id, nombre, email FROM users WHERE id = $1',
+      'SELECT email FROM users WHERE id = $1',
       [req.user.userId]
     );
-    if (userRes.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
-    }
-    const me = userRes.rows[0];
-    const publicImage = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png';
+    const recipient = req.body.target_email || userRes.rows[0]?.email;
+    if (!recipient) return res.status(400).json({ success: false, error: 'No email found' });
 
-    const body = JSON.stringify({
-      to:      me.email,
-      uri:     publicImage,
-      subject: '🧪 Test email (prode)',
-      message: `Hola ${me.nombre}, este es un test del pipeline de email.`,
-    });
+    const testImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Fussball.png/240px-Fussball.png';
+    const body = JSON.stringify({ to: recipient, uri: testImageUrl, subject: 'Test Email Prode', message: 'Este es un email de prueba del pipeline imagemail.' });
 
     const result = await new Promise((resolve, reject) => {
-      const r = https.request({
+      const r2 = https.request({
         hostname: process.env.API_HOSTNAME || 't49euho172.execute-api.us-east-1.amazonaws.com',
         path: '/prod/api/imagemail',
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-        timeout: 25000,
-      }, (resp) => {
+        timeout: 30000,
+      }, (r) => {
         let raw = '';
-        resp.on('data', c => raw += c);
-        resp.on('end', () => resolve({ statusCode: resp.statusCode, body: raw }));
+        r.on('data', c => raw += c);
+        r.on('end', () => resolve({ status: r.statusCode, body: raw }));
       });
-      r.on('error', reject);
-      r.on('timeout', () => { r.destroy(); reject(new Error('imagemail timeout')); });
-      r.write(body);
-      r.end();
+      r2.on('error', reject);
+      r2.on('timeout', () => { r2.destroy(); reject(new Error('imagemail timeout')); });
+      r2.write(body);
+      r2.end();
     });
 
-    res.json({
-      success: true,
-      data: {
-        recipient:       me.email,
-        imagemailStatus: result.statusCode,
-        imagemailBody:   result.body,
-      },
-    });
+    res.json({ success: true, data: { recipient, imagemailStatus: result.status, imagemailBody: result.body } });
   } catch (err) {
     console.error('POST /matchdays/test-email-only error:', err);
     res.status(500).json({ success: false, error: String(err.message || err) });
@@ -614,10 +706,12 @@ router.post('/test-email-only', auth_1.authMiddleware, async (req, res) => {
 
 /**
  * POST /matchdays/test-winner-notification   (auth required)
- * Body: { matchday_name?, points? }
- * Invoca processWinnerNotification en modo aislado — manda la carta FIFA
- * SOLO al email del usuario autenticado (target_email se ignora para
- * prevenir abuso). Útil para testear el pipeline OpenAI + imagemail.
+ * Body: { matchday_name?, points?, skip_avatar?, sync? }
+ *
+ * skip_avatar=true  → force DALL-E text-only branch (~15s, no Responses API)
+ * sync=true         → await full pipeline before responding (errors visibles inline)
+ *
+ * Solo manda email/WhatsApp/push al usuario autenticado — cero riesgo de spam.
  */
 router.post('/test-winner-notification', auth_1.authMiddleware, async (req, res) => {
   try {
@@ -629,23 +723,40 @@ router.post('/test-winner-notification', auth_1.authMiddleware, async (req, res)
       return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
     }
     const me = userRes.rows[0];
-    const targetEmail  = me.email;
-    const matchdayName = req.body.matchday_name || 'Fecha de Prueba';
+    const matchdayName = req.body.matchday_name || 'Test Abril 2026';
     const points       = typeof req.body.points === 'number' ? req.body.points : 42;
+    const skipAvatar   = req.body.skip_avatar === true;
+    const syncMode     = req.body.sync === true;
 
-    const winner  = { user_id: me.id, user_name: me.nombre, user_avatar: me.foto_url || null, points };
+    const winner = {
+      user_id:     me.id,
+      user_name:   me.nombre,
+      user_avatar: skipAvatar ? null : (me.foto_url || null),
+      points,
+    };
     const matchday = { id: '00000000-0000-0000-0000-000000000000', name: matchdayName, tournament_id: null };
 
-    processWinnerNotification(winner, matchday, targetEmail, [targetEmail])
-      .catch(e => console.error('test-winner-notification bg error:', e));
+    const notifPromise = processWinnerNotification(winner, matchday, me.email, [me.email]);
+
+    if (syncMode) {
+      try {
+        await notifPromise;
+        return res.json({
+          success: true,
+          data: { message: 'winner-notification completado (sync)', winner, matchday, recipient: me.email },
+        });
+      } catch (err) {
+        return res.status(500).json({ success: false, error: String(err.message || err) });
+      }
+    }
 
     res.json({
       success: true,
       data: {
-        message:   'winner-notification disparado inline — revisá CloudWatch + bandeja de entrada en ~30-60s',
+        message: 'winner-notification disparado inline (fire-and-forget) — revisá CloudWatch + bandeja',
         winner,
         matchday,
-        recipient: targetEmail,
+        recipient: me.email,
       },
     });
   } catch (err) {
@@ -654,6 +765,10 @@ router.post('/test-winner-notification', auth_1.authMiddleware, async (req, res)
   }
 });
 
+/**
+ * Called from matches.js after publishing a result.
+ * Auto-creates the matchday and recalculates it.
+ */
 async function recalcMatchdayForMatch(matchId, tournamentId, startTime) {
   const md = await ensureMatchday(tournamentId, new Date(startTime));
   await recalcMatchday(md.id);
