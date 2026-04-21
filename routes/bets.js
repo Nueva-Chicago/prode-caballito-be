@@ -213,7 +213,7 @@ router.post('/score', auth_1.authMiddleware, validation_1.betScoreValidation, as
                     await connection_1.db.query(`
                         INSERT INTO bet_reminders (user_id, match_id, planilla_id, remind_minutes, scheduled_for)
                         VALUES ($1, $2, $3, $4, $5)
-                        ON CONFLICT (user_id, match_id) DO UPDATE SET
+                        ON CONFLICT (user_id, match_id, planilla_id) DO UPDATE SET
                             remind_minutes = EXCLUDED.remind_minutes,
                             scheduled_for  = EXCLUDED.scheduled_for,
                             email_sent     = false,
