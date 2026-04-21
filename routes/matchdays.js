@@ -95,8 +95,14 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
           }],
           tools: [{ type: 'image_generation', quality: 'high' }],
         });
-        console.log('Responses API raw output types:', JSON.stringify(respRes.output?.map(o => o.type)));
-        const imgCall = respRes.output?.find(o => o.type === 'image_generation_call');
+        // Log full response keys to diagnose format issues
+        console.log('Responses API keys:', JSON.stringify(Object.keys(respRes || {})));
+        if (respRes.error) {
+          console.warn('Responses API error:', JSON.stringify(respRes.error));
+        }
+        const outputArr = respRes.output || respRes.outputs || [];
+        console.log('Responses API output types:', JSON.stringify(outputArr.map(o => o.type)));
+        const imgCall = outputArr.find(o => o.type === 'image_generation_call');
         if (imgCall?.result) {
           imageUri = `data:image/png;base64,${imgCall.result}`;
           console.log('Got image from Responses API (base64 length):', imgCall.result.length);
@@ -110,16 +116,28 @@ async function processWinnerNotification(winner, matchday, winnerEmail, allEmail
 
     // Fallback: DALL-E 3 (no face reference, purely text-driven)
     if (!imageUri) {
+      const dallePrompt = `A FIFA Ultimate Team player card, ultra high quality digital art style.
+- Golden elite card with shiny gradient background and geometric patterns.
+- Classic FIFA UT card layout: rating 99 top-left, position PRO below it.
+- Player wearing a blue and gold jersey, number 13, in a dynamic celebration pose with fist raised.
+- Player name at the bottom: ${winner.user_name.toUpperCase()}.
+- Card stats: PAS 99, TIR 99, REG 99, FIS 99, RIT 99.
+- Caption text: ${matchday.name} GANADOR.
+- Holographic card shine effect, dark background with golden particles.
+- Ultra-detailed, official FIFA game aesthetic, glossy finish.`;
       const imageRes = await openAiPost('/v1/images/generations', {
         model: 'dall-e-3',
-        prompt: cardPrompt.replace('the person shown in the provided photo', 'an adult person'),
+        prompt: dallePrompt,
         n: 1,
         size: '1024x1024',
         quality: 'hd',
         style: 'vivid',
       });
+      if (imageRes.error) {
+        console.error('DALL-E error:', JSON.stringify(imageRes.error));
+      }
       imageUri = imageRes.data?.[0]?.url || null;
-      console.log('DALL-E fallback image URL:', imageUri);
+      console.log('DALL-E fallback image URL:', imageUri ? 'OK (URL received)' : 'null');
     }
 
     if (!imageUri) throw new Error('No image generated');
