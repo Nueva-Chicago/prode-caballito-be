@@ -66,7 +66,7 @@ exports.planillaValidation = [
     exports.validate,
 ];
 exports.uuidParam = [
-    (0, express_validator_1.param)('id').isUUID().withMessage('ID inválido'),
+    (0, express_validator_1.param)('id').matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i).withMessage('ID inválido'),
     exports.validate,
 ];
 exports.paginationQuery = [
