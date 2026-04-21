@@ -273,7 +273,7 @@ router.post('/resend-code', rateLimit_1.authLimiter, async (req, res) => {
 });
 router.post('/complete-registration', rateLimit_1.authLimiter, async (req, res) => {
     try {
-        const { userId, tema_equipo, telefono } = req.body;
+        const { userId, tema_equipo, telefono, whatsapp_number } = req.body;
         if (!userId) {
             return res.status(400).json({ success: false, error: 'userId es requerido' });
         }
@@ -289,7 +289,8 @@ router.post('/complete-registration', rateLimit_1.authLimiter, async (req, res) 
         const params = [];
         let idx = 1;
         if (tema_equipo) { updates.push(`tema_equipo = $${idx++}`); params.push(tema_equipo); }
-        if (telefono) { updates.push(`telefono = $${idx++}`); params.push(telefono.replace(/\D/g, '')); }
+        const phone = whatsapp_number || telefono;
+        if (phone) { updates.push(`whatsapp_number = $${idx++}`); params.push(phone); }
         if (updates.length > 0) {
             params.push(userId);
             await connection_1.db.query(`UPDATE users SET ${updates.join(', ')} WHERE id = $${idx}`, params);
@@ -320,6 +321,9 @@ router.post('/complete-registration', rateLimit_1.authLimiter, async (req, res) 
                     idioma_pref: user.idioma_pref || 'es',
                     tema_equipo: tema_equipo || 'neutral',
                     foto_url: user.foto_url,
+                    whatsapp_number: phone || user.whatsapp_number || null,
+                    whatsapp_consent: false,
+                    email_verified: true,
                 },
                 token,
                 refreshToken,
