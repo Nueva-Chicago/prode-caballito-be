@@ -287,12 +287,18 @@ router.post('/:matchId/result', auth_1.authMiddleware, auth_1.requireAdmin, vali
 router.delete('/:id', auth_1.authMiddleware, auth_1.requireAdmin, validation_1.uuidParam, async (req, res) => {
     try {
         const { id } = req.params;
-        await connection_1.db.query('DELETE FROM matches WHERE id = $1', [id]);
-        await connection_1.db.query(`INSERT INTO audit_log (user_id, action, entity_type, entity_id, ip_address, user_agent) 
+        await connection_1.db.query('DELETE FROM scores WHERE match_id = $1', [id]);
+        await connection_1.db.query('DELETE FROM bets WHERE match_id = $1', [id]);
+        const result = await connection_1.db.query('DELETE FROM matches WHERE id = $1 RETURNING id', [id]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, error: 'Partido no encontrado' });
+        }
+        await connection_1.db.query(`INSERT INTO audit_log (user_id, action, entity_type, entity_id, ip_address, user_agent)
        VALUES ($1, 'match_delete', 'matches', $2, $3, $4)`, [req.user.userId, id, req.ip, req.headers['user-agent']]);
         res.json({ success: true, message: 'Partido eliminado' });
     }
     catch (error) {
+        console.error('Delete match error:', error);
         res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
 });
