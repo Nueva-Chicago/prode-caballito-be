@@ -73,10 +73,12 @@ router.get('/', auth_1.authMiddleware, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
 });
-router.post('/', auth_1.authMiddleware, validation_1.planillaValidation, async (req, res) => {
+router.post('/', auth_1.authMiddleware, async (req, res) => {
     try {
         await ensurePlanillaTournamentsTable();
-        const { nombre_planilla, tournament_id } = req.body;
+        const { tournament_id } = req.body;
+        const countResult = await connection_1.db.query('SELECT COUNT(*) FROM planillas WHERE user_id = $1', [req.user.userId]);
+        const nombre_planilla = `Planilla ${parseInt(countResult.rows[0].count) + 1}`;
         const result = await connection_1.db.query(`INSERT INTO planillas (user_id, nombre_planilla)
        VALUES ($1, $2)
        RETURNING *`, [req.user.userId, nombre_planilla]);
@@ -113,6 +115,40 @@ router.get('/:id', auth_1.authMiddleware, validation_1.uuidParam, async (req, re
         if (result.rows[0].user_id !== req.user.userId && req.user.rol === 'usuario') {
             return res.status(403).json({ success: false, error: 'No tienes permisos' });
         }
+        res.json({ success: true, data: result.rows[0] });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    }
+});
+router.put('/:id/lock', auth_1.authMiddleware, validation_1.uuidParam, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const existing = await connection_1.db.query('SELECT user_id, precio_pagado FROM planillas WHERE id = $1', [id]);
+        if (!existing.rows.length) return res.status(404).json({ success: false, error: 'Planilla no encontrada' });
+        if (existing.rows[0].user_id !== req.user.userId)
+            return res.status(403).json({ success: false, error: 'No tienes permisos' });
+        if (existing.rows[0].precio_pagado)
+            return res.status(400).json({ success: false, error: 'La planilla ya está cerrada' });
+        // Verificar que todos los partidos pendientes tienen apuesta en esta planilla
+        const pendingWithoutBet = await connection_1.db.query(`
+            SELECT m.id
+            FROM matches m
+            WHERE m.estado != 'finished'
+              AND NOT EXISTS (
+                SELECT 1 FROM bets b
+                WHERE b.match_id = m.id
+                  AND b.planilla_id = $1
+              )
+        `, [id]);
+        if (pendingWithoutBet.rows.length > 0) {
+            return res.status(400).json({
+                success: false,
+                error: `Faltan ${pendingWithoutBet.rows.length} pronóstico${pendingWithoutBet.rows.length !== 1 ? 's' : ''} para cerrar la planilla`,
+                missing: pendingWithoutBet.rows.length,
+            });
+        }
+        const result = await connection_1.db.query('UPDATE planillas SET precio_pagado = true WHERE id = $1 RETURNING *', [id]);
         res.json({ success: true, data: result.rows[0] });
     }
     catch (error) {
