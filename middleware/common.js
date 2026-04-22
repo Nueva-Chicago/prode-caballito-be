@@ -46,7 +46,7 @@ exports.corsMiddleware = (0, cors_1.default)({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-internal-secret'],
     exposedHeaders: ['Content-Length', 'X-Request-Id'],
     maxAge: 86400,
 });
