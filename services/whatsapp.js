@@ -25,10 +25,13 @@ const sendWhatsApp = async ({ to, body }) => {
         }
     }
 
+    // Normalizar número: asegurar que empiece con +
+    const normalized = to.startsWith('+') ? to : `+${to}`;
+
     const twilio = require('twilio')(accountSid, authToken);
     const message = await twilio.messages.create({
         from,
-        to: `whatsapp:${to}`,
+        to: `whatsapp:${normalized}`,
         body,
     });
     console.log(`[whatsapp] sent to ${to} — sid: ${message.sid}`);
