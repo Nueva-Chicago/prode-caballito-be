@@ -9,6 +9,9 @@ const express_1 = __importDefault(require("express"));
 const middleware_1 = require("./middleware");
 const rateLimit_1 = require("./middleware/rateLimit");
 const routes_1 = require("./routes");
+const { sendWhatsApp } = require('./services/whatsapp');
+const { db } = require('./db/connection');
+const { authMiddleware, requireAdmin } = require('./middleware/auth');
 const app = (0, express_1.default)();
 app.set('trust proxy', 1);
 app.use(middleware_1.securityMiddleware);
@@ -38,6 +41,34 @@ app.use('/api/tournaments', routes_1.tournamentsRoutes);
 app.use('/api/matchdays', routes_1.matchdaysRoutes);
 app.use('/api/imagemail', routes_1.imagemailRoutes);
 app.use('/api/push', routes_1.pushRoutes);
+app.post('/api/internal/broadcast-whatsapp', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message || !message.trim()) {
+            return res.status(400).json({ success: false, error: 'Mensaje requerido' });
+        }
+        const result = await db.query(
+            `SELECT whatsapp_number FROM users WHERE whatsapp_number IS NOT NULL AND whatsapp_consent = true`
+        );
+        const numbers = result.rows.map(r => r.whatsapp_number);
+        let sent = 0;
+        let failed = 0;
+        for (const number of numbers) {
+            try {
+                await sendWhatsApp({ to: number, body: message });
+                sent++;
+            } catch (err) {
+                console.error(`[broadcast-whatsapp] error enviando a ${number}:`, err.message);
+                failed++;
+            }
+        }
+        console.log(`[broadcast-whatsapp] total=${numbers.length} sent=${sent} failed=${failed}`);
+        res.json({ success: true, data: { total: numbers.length, sent, failed } });
+    } catch (error) {
+        console.error('[broadcast-whatsapp] error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(err.status || 500).json({
