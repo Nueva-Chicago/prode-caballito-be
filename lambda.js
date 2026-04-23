@@ -41,6 +41,7 @@ app.use('/api/tournaments', routes_1.tournamentsRoutes);
 app.use('/api/matchdays', routes_1.matchdaysRoutes);
 app.use('/api/imagemail', routes_1.imagemailRoutes);
 app.use('/api/push', routes_1.pushRoutes);
+app.use('/api/admin', routes_1.adminRoutes);
 app.post('/api/internal/broadcast-whatsapp', authMiddleware, requireAdmin, async (req, res) => {
     try {
         const { message } = req.body;
