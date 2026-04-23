@@ -38,4 +38,21 @@ const sendWhatsApp = async ({ to, body }) => {
     return message;
 };
 
-module.exports = { sendWhatsApp };
+const sendSMS = async ({ to, body }) => {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken  = process.env.TWILIO_AUTH_TOKEN;
+    const from       = process.env.TWILIO_SMS_FROM; // '+17753638425'
+
+    if (!accountSid || !authToken || !from) {
+        console.warn('[sms] Twilio env vars not set, skipping');
+        return;
+    }
+
+    const normalized = to.startsWith('+') ? to : `+${to}`;
+    const twilio = require('twilio')(accountSid, authToken);
+    const message = await twilio.messages.create({ from, to: normalized, body });
+    console.log(`[sms] sent to ${normalized} — sid: ${message.sid}`);
+    return message;
+};
+
+module.exports = { sendWhatsApp, sendSMS };

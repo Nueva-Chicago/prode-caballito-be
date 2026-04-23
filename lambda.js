@@ -9,7 +9,7 @@ const express_1 = __importDefault(require("express"));
 const middleware_1 = require("./middleware");
 const rateLimit_1 = require("./middleware/rateLimit");
 const routes_1 = require("./routes");
-const { sendWhatsApp } = require('./services/whatsapp');
+const { sendWhatsApp, sendSMS } = require('./services/whatsapp');
 const { db } = require('./db/connection');
 const { authMiddleware, requireAdmin } = require('./middleware/auth');
 const app = (0, express_1.default)();
@@ -55,7 +55,13 @@ app.post('/api/internal/broadcast-whatsapp', authMiddleware, requireAdmin, async
         let failed = 0;
         for (const number of numbers) {
             try {
-                await sendWhatsApp({ to: number, body: message });
+                try {
+                    await sendWhatsApp({ to: number, body: message });
+                } catch (waErr) {
+                    // Fuera de ventana WhatsApp → fallback a SMS
+                    console.warn(`[broadcast] WA falló para ${number} (${waErr.message}), intentando SMS`);
+                    await sendSMS({ to: number, body: message });
+                }
                 sent++;
             } catch (err) {
                 console.error(`[broadcast-whatsapp] error enviando a ${number}:`, err.message);
