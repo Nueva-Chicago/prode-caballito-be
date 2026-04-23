@@ -33,6 +33,7 @@ app.use('/api/config', routes_1.configRoutes);
 app.use('/api/teams', routes_1.teamsRoutes);
 app.use('/api/matchdays', routes_1.matchdaysRoutes);
 app.use('/api/push', routes_1.pushRoutes);
+app.use('/api/admin', routes_1.adminRoutes);
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(err.status || 500).json({

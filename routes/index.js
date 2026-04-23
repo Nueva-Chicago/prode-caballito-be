@@ -38,4 +38,6 @@ var imagemail_1 = require("./imagemail");
 Object.defineProperty(exports, "imagemailRoutes", { enumerable: true, get: function () { return __importDefault(imagemail_1).default; } });
 var push_1 = require("./push");
 Object.defineProperty(exports, "pushRoutes", { enumerable: true, get: function () { return __importDefault(push_1).default; } });
+var admin_1 = require("./admin");
+Object.defineProperty(exports, "adminRoutes", { enumerable: true, get: function () { return admin_1; } });
 //# sourceMappingURL=index.js.map
