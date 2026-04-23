@@ -136,6 +136,80 @@ router.post('/test-all', auth_1.authMiddleware, async (req, res) => {
     res.json({ success: true, data: results });
 });
 
+// Test all 3 WhatsApp templates — sends only to the authenticated user's number
+router.post('/test-whatsapp-templates', auth_1.authMiddleware, async (req, res) => {
+    const userId = req.user.userId;
+
+    const userRes = await connection_1.db.query(
+        'SELECT whatsapp_number, whatsapp_consent, nombre FROM users WHERE id = $1',
+        [userId]
+    );
+    if (userRes.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+    }
+    const user = userRes.rows[0];
+
+    if (!user.whatsapp_number) {
+        return res.status(400).json({ success: false, error: 'Sin número de WhatsApp configurado en Perfil' });
+    }
+    if (!user.whatsapp_consent) {
+        return res.status(400).json({ success: false, error: 'Consentimiento WhatsApp no activado en Perfil' });
+    }
+
+    const { sendWhatsAppTemplate } = require('../services/whatsapp');
+    const results = {};
+
+    // prode_nuevo_lider: variables { 1: puntos }
+    try {
+        await sendWhatsAppTemplate({
+            to: user.whatsapp_number,
+            templateName: 'prode_nuevo_lider',
+            variables: { '1': '42' },
+        });
+        results.prode_nuevo_lider = { ok: true };
+    } catch (e) {
+        results.prode_nuevo_lider = { ok: false, error: e.message };
+    }
+
+    // prode_resultado_partido: variables { 1: equipo_local, 2: goles_local, 3: goles_visitante, 4: equipo_visitante, 5: betLine, 6: posicion }
+    try {
+        await sendWhatsAppTemplate({
+            to: user.whatsapp_number,
+            templateName: 'prode_resultado_partido',
+            variables: {
+                '1': 'River Plate',
+                '2': '2',
+                '3': '1',
+                '4': 'Boca Juniors',
+                '5': '🔴 Acertaste el resultado exacto (+3 pts)',
+                '6': '3',
+            },
+        });
+        results.prode_resultado_partido = { ok: true };
+    } catch (e) {
+        results.prode_resultado_partido = { ok: false, error: e.message };
+    }
+
+    // prode_ganador_fecha: variables { 1: nombre_ganador, 2: nombre_fecha, 3: puntos }
+    try {
+        await sendWhatsAppTemplate({
+            to: user.whatsapp_number,
+            templateName: 'prode_ganador_fecha',
+            variables: {
+                '1': user.nombre,
+                '2': 'Fecha 23/04',
+                '3': '42',
+            },
+        });
+        results.prode_ganador_fecha = { ok: true };
+    } catch (e) {
+        results.prode_ganador_fecha = { ok: false, error: e.message };
+    }
+
+    const allOk = Object.values(results).every(r => r.ok);
+    res.json({ success: allOk, data: { to: user.whatsapp_number, results } });
+});
+
 // Send a test push to the authenticated user's own subscriptions
 router.post('/test', auth_1.authMiddleware, async (req, res) => {
     try {
