@@ -69,6 +69,7 @@ jobs:
             --function-name prode-api \
             --payload file:///tmp/winner_payload.json \
             --cli-binary-format raw-in-base64-out \
+            --cli-read-timeout 300 \
             --region us-east-1 winner_output.json
           cat winner_output.json
         env:
