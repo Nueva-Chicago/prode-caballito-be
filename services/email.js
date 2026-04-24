@@ -525,4 +525,148 @@ const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayT
     });
 };
 exports.sendNewLeaderEmail = sendNewLeaderEmail;
+
+const sendWeeklyDigestEmail = async ({ userEmail, userName, rankingPos, puntos, upcomingMatches, pendingCount, top3 }) => {
+    const fmtAR = (d) => new Date(d).toLocaleString('es-AR', {
+        timeZone: 'America/Argentina/Buenos_Aires',
+        weekday: 'short', day: 'numeric', month: 'short',
+        hour: '2-digit', minute: '2-digit'
+    });
+
+    const positionEmoji = rankingPos === 1 ? '🥇' : rankingPos === 2 ? '🥈' : rankingPos === 3 ? '🥉' : '🏅';
+    const hasRanking = rankingPos != null && puntos > 0;
+
+    const top3Rows = (top3 || []).map((r, i) => {
+        const medal = ['🥇', '🥈', '🥉'][i] || `#${r.position}`;
+        return `<tr>
+          <td style="padding:8px 0;font-size:14px;color:#374151;font-family:Arial,sans-serif;">
+            ${medal} <strong>${r.user_name}</strong>
+          </td>
+          <td style="padding:8px 0;font-size:14px;font-weight:900;color:#0042A5;text-align:right;font-family:Arial,sans-serif;">
+            ${r.puntos_totales} pts
+          </td>
+        </tr>`;
+    }).join('');
+
+    const matchRows = (upcomingMatches || []).slice(0, 5).map(m => `
+      <tr>
+        <td style="padding:7px 0;border-bottom:1px solid #F3F4F6;">
+          <p style="margin:0;font-size:13px;font-weight:700;color:#001A4B;font-family:Arial,sans-serif;">${m.home_team} vs ${m.away_team}</p>
+          <p style="margin:2px 0 0;font-size:11px;color:#9CA3AF;font-family:Arial,sans-serif;">${fmtAR(m.start_time)} hs</p>
+        </td>
+      </tr>`).join('');
+
+    const pendingBanner = pendingCount > 0 ? `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FEF3C7" style="border-radius:12px;margin-bottom:24px;">
+        <tr><td style="padding:16px 20px;border-left:4px solid #F59E0B;border-radius:12px;">
+          <p style="margin:0;font-size:14px;font-weight:700;color:#92400E;font-family:Arial,sans-serif;">
+            ⚠️ Tenés ${pendingCount} partido${pendingCount > 1 ? 's' : ''} sin pronosticar esta semana
+          </p>
+          <p style="margin:6px 0 0;font-size:12px;color:#B45309;font-family:Arial,sans-serif;">
+            No pierdas puntos — apostá antes que cierren las apuestas.
+          </p>
+        </td></tr>
+      </table>` : '';
+
+    const rankingSection = hasRanking ? `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+        <tr><td style="background:linear-gradient(135deg,#001A4B 0%,#0042A5 100%);border-radius:14px;padding:24px;text-align:center;">
+          <p style="margin:0 0 4px;font-size:12px;color:#93C5FD;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">Tu posición actual</p>
+          <p style="margin:0;font-size:48px;font-weight:900;color:#FFCC00;font-family:Arial,sans-serif;line-height:1.1;">${positionEmoji} #${rankingPos}</p>
+          <p style="margin:6px 0 0;font-size:20px;font-weight:900;color:#FFFFFF;font-family:Arial,sans-serif;">${puntos} puntos</p>
+        </td></tr>
+      </table>` : `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EFF6FF" style="border-radius:14px;margin-bottom:28px;">
+        <tr><td style="padding:20px 24px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:28px;">⚽</p>
+          <p style="margin:0;font-size:15px;font-weight:700;color:#0042A5;font-family:Arial,sans-serif;">El ranking aún no empezó</p>
+          <p style="margin:6px 0 0;font-size:13px;color:#6B7280;font-family:Arial,sans-serif;">Apostá en los primeros partidos para aparecer en el podio.</p>
+        </td></tr>
+      </table>`;
+
+    const top3Section = top3 && top3.length > 0 && top3[0].puntos_totales > 0 ? `
+      <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#001A4B;font-family:Arial,sans-serif;">🏆 Podio actual</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F9FAFB" style="border-radius:12px;padding:4px 0;margin-bottom:28px;">
+        <tr><td style="padding:4px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">${top3Rows}</table>
+        </td></tr>
+      </table>` : '';
+
+    const matchesSection = matchRows ? `
+      <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#001A4B;font-family:Arial,sans-serif;">📅 Próximos partidos</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F9FAFB" style="border-radius:12px;margin-bottom:24px;">
+        <tr><td style="padding:4px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">${matchRows}</table>
+        </td></tr>
+      </table>` : '';
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#001A4B;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#001A4B">
+  <tr><td align="center" style="padding:40px 20px;">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+      <!-- Header -->
+      <tr><td align="center" style="padding-bottom:28px;">
+        <p style="margin:0;font-size:38px;line-height:1;">⚽</p>
+        <h1 style="color:#ffffff;margin:10px 0 0;font-size:26px;font-weight:800;font-family:Arial,sans-serif;">PRODE Caballito</h1>
+        <p style="color:#FFDF00;margin:6px 0 0;font-size:13px;font-weight:600;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">Resumen Semanal</p>
+      </td></tr>
+
+      <!-- Main Card -->
+      <tr><td style="background-color:#ffffff;border-radius:20px;overflow:hidden;">
+
+        <!-- Yellow banner -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td bgcolor="#FFCC00" align="center" style="padding:28px 30px;border-radius:20px 20px 0 0;">
+            <h2 style="color:#001A4B;margin:0;font-size:22px;font-weight:800;font-family:Arial,sans-serif;">¡Hola, ${userName}! 👋</h2>
+            <p style="color:#0042A5;margin:8px 0 0;font-size:14px;font-family:Arial,sans-serif;">Acá está tu resumen del Mundial 2026</p>
+          </td></tr>
+        </table>
+
+        <!-- Body -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td style="padding:32px 30px;">
+            ${rankingSection}
+            ${top3Section}
+            ${matchesSection}
+            ${pendingBanner}
+            <!-- CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+              <tr><td align="center">
+                <a href="https://prodecaballito.com/apuestas"
+                   style="display:inline-block;background-color:#0042A5;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:50px;font-size:17px;font-weight:700;font-family:Arial,sans-serif;">
+                  ⚽ Ver partidos y apostar →
+                </a>
+              </td></tr>
+            </table>
+            <p style="color:#9CA3AF;font-size:12px;text-align:center;margin:0;font-family:Arial,sans-serif;">
+              Con cariño, el equipo de <strong>PRODE Caballito</strong> 💙
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+
+      <!-- Footer -->
+      <tr><td align="center" style="padding-top:24px;">
+        <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0 0 6px;font-family:Arial,sans-serif;">© 2026 PRODE Caballito · Mundial 2026</p>
+        <a href="https://prodecaballito.com" style="color:rgba(255,255,255,0.7);font-size:12px;text-decoration:none;font-family:Arial,sans-serif;">www.prodecaballito.com</a>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+    await sendEmail({
+        to: userEmail,
+        subject: hasRanking
+            ? `⚽ PRODE Caballito — Vas #${rankingPos} con ${puntos}pts · Resumen semanal`
+            : `⚽ PRODE Caballito — Resumen semanal · Mundial 2026`,
+        html,
+    });
+};
+exports.sendWeeklyDigestEmail = sendWeeklyDigestEmail;
 //# sourceMappingURL=email.js.map
