@@ -3,11 +3,21 @@
 const mockFetch = jest.fn()
 global.fetch = mockFetch
 
+const mockDbQuery = jest.fn()
+jest.mock('../db/connection', () => ({
+  db: { query: mockDbQuery },
+}))
+
 const { sendEmail, sendWelcomeEmail, sendVerificationCode } = require('../services/email')
 
 beforeEach(() => {
   mockFetch.mockReset()
   mockFetch.mockResolvedValue({ ok: true })
+  mockDbQuery.mockReset()
+  // default: 42 users, no avatar
+  mockDbQuery
+    .mockResolvedValueOnce({ rows: [{ total: 42 }] })
+    .mockResolvedValueOnce({ rows: [{ foto_url: null }] })
 })
 
 describe('sendEmail', () => {
@@ -81,11 +91,29 @@ describe('sendWelcomeEmail', () => {
     expect(body.html).toContain('#111')
   })
 
-  it('incluye el stat de jugadores', async () => {
+  it('muestra el total real de jugadores desde la DB', async () => {
     await sendWelcomeEmail('user@test.com', 'Juan')
     const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-    expect(body.html).toContain('1.248')
+    expect(body.html).toContain('42')
     expect(body.html).toContain('JUGADORES')
+  })
+
+  it('no incluye img de avatar si el usuario no tiene foto', async () => {
+    await sendWelcomeEmail('user@test.com', 'Juan')
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+    expect(body.html).not.toContain('Tu foto')
+  })
+
+  it('incluye avatar cuando el usuario tiene foto_url', async () => {
+    mockDbQuery.mockReset()
+    mockDbQuery
+      .mockResolvedValueOnce({ rows: [{ total: 10 }] })
+      .mockResolvedValueOnce({ rows: [{ foto_url: 'https://cdn.example.com/avatar.jpg' }] })
+    await sendWelcomeEmail('user@test.com', 'Juan')
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+    expect(body.html).toContain('https://cdn.example.com/avatar.jpg')
+    expect(body.html).toContain('Tu foto')
+    expect(body.html).toContain('border-radius:50%')
   })
 
   it('HTML es válido (tiene doctype, head y body)', async () => {

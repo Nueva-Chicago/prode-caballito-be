@@ -79,8 +79,19 @@ const sendRankingUpdateEmail = async (userEmail, userName, newPosition, previous
 };
 exports.sendRankingUpdateEmail = sendRankingUpdateEmail;
 const sendWelcomeEmail = async (email, nombre) => {
-    const { rows } = await db.query('SELECT COUNT(*) as total FROM users');
-    const totalJugadores = Number(rows[0]?.total || 0).toLocaleString('es-AR');
+    const [countResult, userResult] = await Promise.all([
+        db.query('SELECT COUNT(*) as total FROM users'),
+        db.query('SELECT foto_url FROM users WHERE email = $1', [email]),
+    ]);
+    const totalJugadores = Number(countResult.rows[0]?.total || 0).toLocaleString('es-AR');
+    const fotoUrl = userResult.rows[0]?.foto_url || null;
+    const avatarBlock = fotoUrl ? `
+      <tr>
+        <td align="center" style="padding:20px 0 0;">
+          <img src="${fotoUrl}" alt="Tu foto" width="72" height="72"
+               style="border-radius:50%;border:3px solid #FFB700;object-fit:cover;display:block;" />
+        </td>
+      </tr>` : '';
     const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -141,6 +152,7 @@ const sendWelcomeEmail = async (email, nombre) => {
   <tr>
     <td style="background:#f0f0f0;padding:24px 20px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        ${avatarBlock}
         <tr>
           <!-- Columna izquierda -->
           <td width="56%" valign="top" style="padding-right:12px;">
