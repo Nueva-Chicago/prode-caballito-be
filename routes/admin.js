@@ -5,6 +5,7 @@ const { adminTestWhatsappValidation, adminWeeklyEmailValidation, adminWinnerImag
 const { sendWhatsApp } = require("../services/whatsapp");
 const { db } = require("../db/connection");
 const { sendWeeklyEmail } = require("../services/email");
+const { runValidation } = require("../services/scoreValidator");
 
 const router = Router();
 
@@ -281,6 +282,63 @@ router.post('/jobs/trigger-winner', authMiddleware, requireAdmin, adminTriggerWi
         res.json({ success: true, message: `Ganador procesado: ${user.nombre}` });
     } catch (error) {
         console.error('[jobs/trigger-winner]', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ── Score integrity validation ────────────────────────────────────────────────
+
+router.get('/validate-scores', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { tournament_id } = req.query;
+
+        const matchFilter = tournament_id
+            ? `WHERE m.estado = 'finished' AND m.tournament_id = $1`
+            : `WHERE m.estado = 'finished'`;
+        const matchParams = tournament_id ? [tournament_id] : [];
+
+        const matchesRes = await db.query(
+            `SELECT id, resultado_local, resultado_visitante FROM matches ${matchFilter}`,
+            matchParams
+        );
+        const finishedMatches = matchesRes.rows;
+
+        if (finishedMatches.length === 0) {
+            return res.json({
+                success: true,
+                data: {
+                    scoreErrors: [], missingScores: [], rankingErrors: [],
+                    summary: {
+                        checked_matches: 0, checked_bets: 0, checked_rankings: 0,
+                        score_errors: 0, missing_scores: 0, ranking_errors: 0, valid: true,
+                    },
+                },
+            });
+        }
+
+        const matchIds = finishedMatches.map(m => m.id);
+        const placeholders = matchIds.map((_, i) => `$${i + 1}`).join(',');
+
+        const [betsRes, scoresRes, rankingsRes] = await Promise.all([
+            db.query(
+                `SELECT planilla_id, match_id, goles_local, goles_visitante FROM bets WHERE match_id IN (${placeholders})`,
+                matchIds
+            ),
+            db.query(
+                `SELECT planilla_id, match_id, puntos_obtenidos, bonus_aplicado FROM scores WHERE match_id IN (${placeholders})`,
+                matchIds
+            ),
+            db.query(
+                `SELECT r.planilla_id, r.puntos_totales FROM ranking r
+                 JOIN planillas p ON p.id = r.planilla_id
+                 WHERE p.precio_pagado = true`
+            ),
+        ]);
+
+        const result = runValidation(finishedMatches, betsRes.rows, scoresRes.rows, rankingsRes.rows);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error('[admin/validate-scores]', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });
