@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.paginationQuery = exports.uuidParam = exports.planillaValidation = exports.commentValidation = exports.matchResultValidation = exports.matchValidation = exports.betScoreValidation = exports.betValidation = exports.loginValidation = exports.registerValidation = exports.validate = void 0;
+exports.paginationQuery = exports.uuidParam = exports.planillaValidation = exports.messageValidation = exports.commentValidation = exports.matchResultValidation = exports.matchValidation = exports.betScoreValidation = exports.betValidation = exports.loginValidation = exports.registerValidation = exports.validate = void 0;
 const express_validator_1 = require("express-validator");
 const validate = (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
@@ -59,6 +59,11 @@ exports.commentValidation = [
     (0, express_validator_1.body)('target_id').isUUID().withMessage('ID de target inválido'),
     (0, express_validator_1.body)('content').trim().isLength({ min: 1, max: 280 }).withMessage('Contenido 1-280 caracteres'),
     (0, express_validator_1.body)('parent_id').optional().isUUID(),
+    exports.validate,
+];
+exports.messageValidation = [
+    (0, express_validator_1.param)('otherUserId').isUUID().withMessage('ID de usuario inválido'),
+    (0, express_validator_1.body)('content').trim().notEmpty().withMessage('Mensaje requerido').isLength({ max: 1000 }).withMessage('Mensaje máximo 1000 caracteres'),
     exports.validate,
 ];
 exports.planillaValidation = [

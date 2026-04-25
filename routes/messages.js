@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const connection_1 = require("../db/connection");
 const auth_1 = require("../middleware/auth");
+const validation_1 = require("../middleware/validation");
 const config_1 = require("../config");
 const router = (0, express_1.Router)();
 router.get('/users', auth_1.authMiddleware, async (req, res) => {
@@ -65,7 +66,7 @@ router.get('/:otherUserId', auth_1.authMiddleware, async (req, res) => {
         res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
 });
-router.post('/:otherUserId', auth_1.authMiddleware, async (req, res) => {
+router.post('/:otherUserId', auth_1.authMiddleware, validation_1.messageValidation, async (req, res) => {
     try {
         const { otherUserId } = req.params;
         const { content } = req.body;
