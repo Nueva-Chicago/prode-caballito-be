@@ -118,14 +118,19 @@ const sendWelcomeEmail = async (email, nombre) => {
     </td>
   </tr>
 
-  <!-- ── BLOQUE 2: HERO (estadio nocturno con overlay) ── -->
+  <!-- ── BLOQUE 2: HERO (foto estadio real + overlay oscuro) ── -->
   <tr>
-    <td style="background:linear-gradient(135deg,#0a1628 0%,#0d2044 30%,#1a1200 70%,#0a0a00 100%);padding:44px 28px 40px;position:relative;">
-      <!-- Headline -->
-      <div style="color:#fff;font-size:52px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:4px;">ESTO YA EMPEZÓ</div>
-      <div style="color:#FFB700;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:4px;">¿VAS A JUGAR</div>
-      <div style="color:#FFB700;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:18px;">O MIRAR?</div>
-      <div style="color:rgba(255,255,255,0.8);font-size:15px;font-family:Arial,sans-serif;">Tus amigos ya están compitiendo.</div>
+    <td bgcolor="#0a1628" style="background-image:url('https://prodecaballito.com/ChatGPT%20Image%20Apr%2025%2C%202026%2C%2005_00_01%20PM.png');background-size:cover;background-position:center top;background-color:#0a1628;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);padding:48px 28px 44px;">
+            <div style="color:#fff;font-size:52px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:4px;">ESTO YA EMPEZÓ</div>
+            <div style="color:#FFB700;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:4px;">¿VAS A JUGAR</div>
+            <div style="color:#FFB700;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:20px;">O MIRAR?</div>
+            <div style="color:rgba(255,255,255,0.85);font-size:15px;font-family:Arial,sans-serif;">Tus amigos ya están compitiendo.</div>
+          </td>
+        </tr>
+      </table>
     </td>
   </tr>
 
