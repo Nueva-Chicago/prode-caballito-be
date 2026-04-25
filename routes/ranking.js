@@ -3,7 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const connection_1 = require("../db/connection");
 const auth_1 = require("../middleware/auth");
+const cache = require("../services/cache");
 const router = (0, express_1.Router)();
+
+const RANKING_TTL = 30_000; // 30s — matches client polling interval
 
 // ── planilla_favorites: tabla N:N user ↔ planilla ────────────────────────────
 let _favTableEnsured = false;
@@ -66,68 +69,78 @@ router.get('/', async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 50;
         const offset = (page - 1) * limit;
-        // include_unpaid defaults to true so all tarjetas appear in the ranking
         const paidOnly = req.query.paid_only === 'true';
         const paidClause = paidOnly ? ' AND p.precio_pagado = true' : '';
-        const result = await connection_1.db.query(`
-      SELECT
-        COALESCE(r.puntos_totales, 0) as puntos_totales,
-        COALESCE(r.exactos_count, 0) as exactos_count,
-        COALESCE(r.aciertos_celeste, 0) as aciertos_celeste,
-        COALESCE(r.aciertos_rojo, 0) as aciertos_rojo,
-        COALESCE(r.aciertos_verde, 0) as aciertos_verde,
-        COALESCE(r.aciertos_amarillo, 0) as aciertos_amarillo,
-        u.id as user_id,
-        u.nombre as user_name,
-        u.foto_url as user_avatar,
-        CASE WHEN u.whatsapp_consent = true THEN u.whatsapp_number ELSE NULL END as whatsapp_number,
-        p.nombre_planilla,
-        p.precio_pagado,
-        p.id as planilla_id,
-        r.position as official_position,
-        ROW_NUMBER() OVER (
+
+        // Cache the shared ranking list — user-specific position added below
+        const cacheKey = `ranking:${page}:${limit}:${paidOnly}`;
+        let rankingData = cache.get(cacheKey);
+
+        if (!rankingData) {
+            const result = await connection_1.db.query(`
+          SELECT
+            COALESCE(r.puntos_totales, 0) as puntos_totales,
+            COALESCE(r.exactos_count, 0) as exactos_count,
+            COALESCE(r.aciertos_celeste, 0) as aciertos_celeste,
+            COALESCE(r.aciertos_rojo, 0) as aciertos_rojo,
+            COALESCE(r.aciertos_verde, 0) as aciertos_verde,
+            COALESCE(r.aciertos_amarillo, 0) as aciertos_amarillo,
+            u.id as user_id,
+            u.nombre as user_name,
+            u.foto_url as user_avatar,
+            CASE WHEN u.whatsapp_consent = true THEN u.whatsapp_number ELSE NULL END as whatsapp_number,
+            p.nombre_planilla,
+            p.precio_pagado,
+            p.id as planilla_id,
+            r.position as official_position,
+            ROW_NUMBER() OVER (
+              ORDER BY
+                COALESCE(r.puntos_totales, 0) DESC,
+                COALESCE(r.aciertos_celeste, 0) DESC,
+                COALESCE(r.aciertos_rojo, 0) DESC,
+                COALESCE(r.aciertos_verde, 0) DESC,
+                COALESCE(r.aciertos_amarillo, 0) DESC
+            ) as virtual_position
+          FROM planillas p
+          LEFT JOIN ranking r ON r.planilla_id = p.id
+          JOIN users u ON p.user_id = u.id
+          WHERE 1=1 ${paidClause}
           ORDER BY
             COALESCE(r.puntos_totales, 0) DESC,
             COALESCE(r.aciertos_celeste, 0) DESC,
             COALESCE(r.aciertos_rojo, 0) DESC,
             COALESCE(r.aciertos_verde, 0) DESC,
             COALESCE(r.aciertos_amarillo, 0) DESC
-        ) as virtual_position
-      FROM planillas p
-      LEFT JOIN ranking r ON r.planilla_id = p.id
-      JOIN users u ON p.user_id = u.id
-      WHERE 1=1 ${paidClause}
-      ORDER BY
-        COALESCE(r.puntos_totales, 0) DESC,
-        COALESCE(r.aciertos_celeste, 0) DESC,
-        COALESCE(r.aciertos_rojo, 0) DESC,
-        COALESCE(r.aciertos_verde, 0) DESC,
-        COALESCE(r.aciertos_amarillo, 0) DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset]);
-        const countResult = await connection_1.db.query(`
-      SELECT COUNT(*) FROM planillas p
-      LEFT JOIN ranking r ON r.planilla_id = p.id
-      WHERE 1=1 ${paidClause}
-    `);
-        // Mapear los resultados para usar position correcta
-        const mappedRanking = result.rows.map(row => ({
-            ...row,
-            position: Number(row.official_position || row.virtual_position),
-            is_virtual: !row.precio_pagado
-        }));
+          LIMIT $1 OFFSET $2
+        `, [limit, offset]);
+            const countResult = await connection_1.db.query(`
+          SELECT COUNT(*) FROM planillas p
+          LEFT JOIN ranking r ON r.planilla_id = p.id
+          WHERE 1=1 ${paidClause}
+        `);
+            rankingData = {
+                ranking: result.rows.map(row => ({
+                    ...row,
+                    position: Number(row.official_position || row.virtual_position),
+                    is_virtual: !row.precio_pagado,
+                })),
+                total: parseInt(countResult.rows[0].count),
+            };
+            cache.set(cacheKey, rankingData, RANKING_TTL);
+        }
+
         res.json({
             success: true,
             data: {
-                ranking: mappedRanking,
+                ranking: rankingData.ranking,
                 currentUser: req.user ? {
                     position: await getUserPosition(req.user.userId),
                 } : null,
                 pagination: {
                     page,
                     limit,
-                    total: parseInt(countResult.rows[0].count),
-                    pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+                    total: rankingData.total,
+                    pages: Math.ceil(rankingData.total / limit),
                 },
             },
         });

@@ -8,16 +8,27 @@ const scoring_1 = require("../services/scoring");
 const { notifyResult } = require("../services/resultNotifications");
 const { sendRankingUpdateEmail } = require("../services/email");
 const tournamentRanking_1 = require("../services/tournamentRanking");
+const cache = require("../services/cache");
 const router = (0, express_1.Router)();
+
+const MATCHES_TTL = 30_000; // 30s
+
 router.get('/', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 50;
         const offset = (page - 1) * limit;
-        const estado = req.query.estado;
-        const planilla_id = req.query.planilla_id;
-        const tournament_id = req.query.tournament_id;
-        let query = `SELECT m.*, 
+        const estado = req.query.estado || '';
+        const planilla_id = req.query.planilla_id || '';
+        const tournament_id = req.query.tournament_id || '';
+
+        const cacheKey = `matches:${page}:${limit}:${estado}:${planilla_id}:${tournament_id}`;
+        const cached = cache.get(cacheKey);
+        if (cached) return res.json(cached);
+
+        const params = [];
+        const conditions = [];
+        let query = `SELECT m.*,
       p.nombre_planilla,
       u.nombre as planilla_owner_name,
       t.name as tournament_name,
@@ -26,8 +37,6 @@ router.get('/', async (req, res) => {
     LEFT JOIN planillas p ON m.planilla_id = p.id
     LEFT JOIN users u ON p.user_id = u.id
     LEFT JOIN tournaments t ON m.tournament_id = t.id`;
-        const params = [];
-        const conditions = [];
         if (estado) {
             conditions.push('m.estado = $' + (params.length + 1));
             params.push(estado);
@@ -40,23 +49,20 @@ router.get('/', async (req, res) => {
             conditions.push('m.tournament_id = $' + (params.length + 1));
             params.push(tournament_id);
         }
-        if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
-        }
-        // Order by: unfinished matches first, then by start_time
-        query += ` ORDER BY 
+        if (conditions.length > 0) query += ' WHERE ' + conditions.join(' AND ');
+        query += ` ORDER BY
       CASE WHEN m.finished = false THEN 0 ELSE 1 END,
-      m.start_time ASC 
+      m.start_time ASC
       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
         params.push(limit, offset);
+
         const result = await connection_1.db.query(query, params);
-        res.json({
+        const response = {
             success: true,
-            data: {
-                matches: result.rows,
-                pagination: { page, limit },
-            },
-        });
+            data: { matches: result.rows, pagination: { page, limit } },
+        };
+        cache.set(cacheKey, response, MATCHES_TTL);
+        res.json(response);
     }
     catch (error) {
         res.status(500).json({ success: false, error: 'Error interno del servidor' });
@@ -177,6 +183,8 @@ router.post('/:matchId/result', auth_1.authMiddleware, auth_1.requireAdmin, vali
         await connection_1.db.query(`INSERT INTO audit_log (user_id, action, entity_type, entity_id, new_value, ip_address, user_agent)
        VALUES ($1, 'result_published', 'matches', $2, $3, $4, $5)`, [req.user.userId, matchId, JSON.stringify({ resultado_local, resultado_visitante }), req.ip, req.headers['user-agent']]);
         await actualizarRanking();
+        cache.invalidatePrefix('ranking:');
+        cache.invalidatePrefix('matches:');
 
         // Notificaciones post-resultado (best-effort, no bloquean la respuesta)
         setImmediate(() => notifyResult({
