@@ -1,13 +1,14 @@
 "use strict";
 const { Router } = require("express");
 const { authMiddleware, requireAdmin } = require("../middleware/auth");
+const { adminTestWhatsappValidation, adminWeeklyEmailValidation, adminWinnerImageValidation, adminRecalcMatchdayValidation, adminSendWelcomeValidation, adminTriggerWinnerValidation } = require("../middleware/validation");
 const { sendWhatsApp } = require("../services/whatsapp");
 const { db } = require("../db/connection");
 const { sendWeeklyEmail } = require("../services/email");
 
 const router = Router();
 
-router.post('/test-whatsapp', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/test-whatsapp', authMiddleware, requireAdmin, adminTestWhatsappValidation, async (req, res) => {
     try {
         const { to, message } = req.body;
         if (!to || !message) {
@@ -173,7 +174,7 @@ async function sendWeeklyEmailBatch(testEmail = null) {
 
 // POST /api/admin/weekly-email
 // Body opcional: { test_email: "..." } → envía solo a ese email (preview)
-router.post('/weekly-email', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/weekly-email', authMiddleware, requireAdmin, adminWeeklyEmailValidation, async (req, res) => {
     try {
         const testEmail = req.body.test_email || null;
         console.log(`[weekly-email] Starting batch${testEmail ? ` (test: ${testEmail})` : ''}`);
@@ -188,7 +189,7 @@ router.post('/weekly-email', authMiddleware, requireAdmin, async (req, res) => {
 
 // POST /api/admin/winner-image
 // Body: { image_url: "...", matchday_label: "Fecha 3" }
-router.post('/winner-image', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/winner-image', authMiddleware, requireAdmin, adminWinnerImageValidation, async (req, res) => {
     try {
         const { image_url, matchday_label } = req.body;
         if (!image_url) return res.status(400).json({ success: false, error: 'image_url requerida' });
@@ -234,7 +235,7 @@ router.post('/jobs/recalculate-ranking', authMiddleware, requireAdmin, async (re
     }
 });
 
-router.post('/jobs/recalc-matchday', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/jobs/recalc-matchday', authMiddleware, requireAdmin, adminRecalcMatchdayValidation, async (req, res) => {
     try {
         const { matchday_id } = req.body;
         if (!matchday_id) return res.status(400).json({ success: false, error: 'matchday_id requerido' });
@@ -247,7 +248,7 @@ router.post('/jobs/recalc-matchday', authMiddleware, requireAdmin, async (req, r
     }
 });
 
-router.post('/jobs/send-welcome', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/jobs/send-welcome', authMiddleware, requireAdmin, adminSendWelcomeValidation, async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ success: false, error: 'email requerido' });
@@ -262,7 +263,7 @@ router.post('/jobs/send-welcome', authMiddleware, requireAdmin, async (req, res)
     }
 });
 
-router.post('/jobs/trigger-winner', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/jobs/trigger-winner', authMiddleware, requireAdmin, adminTriggerWinnerValidation, async (req, res) => {
     try {
         const { email, matchday_id, matchday_name, points } = req.body;
         if (!email) return res.status(400).json({ success: false, error: 'email requerido' });

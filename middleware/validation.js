@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.paginationQuery = exports.uuidParam = exports.planillaValidation = exports.userUpdateValidation = exports.messageValidation = exports.commentValidation = exports.matchResultValidation = exports.matchUpdateValidation = exports.matchValidation = exports.betScoreValidation = exports.betValidation = exports.loginValidation = exports.registerValidation = exports.validate = void 0;
+exports.paginationQuery = exports.uuidParam = exports.planillaValidation = exports.userUpdateValidation = exports.messageValidation = exports.commentValidation = exports.matchResultValidation = exports.matchUpdateValidation = exports.matchValidation = exports.betScoreValidation = exports.betValidation = exports.loginValidation = exports.registerValidation = exports.validate = exports.adminTestWhatsappValidation = exports.adminWeeklyEmailValidation = exports.adminWinnerImageValidation = exports.adminRecalcMatchdayValidation = exports.adminSendWelcomeValidation = exports.adminTriggerWinnerValidation = void 0;
 const express_validator_1 = require("express-validator");
 const validate = (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
@@ -107,6 +107,35 @@ exports.uuidParam = [
 exports.paginationQuery = [
     (0, express_validator_1.query)('page').optional().isInt({ min: 1 }).toInt(),
     (0, express_validator_1.query)('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+    exports.validate,
+];
+exports.adminTestWhatsappValidation = [
+    (0, express_validator_1.body)('to').trim().notEmpty().withMessage('to requerido').matches(/^\+?\d{7,15}$/).withMessage('Número de teléfono inválido (7-15 dígitos)'),
+    (0, express_validator_1.body)('message').trim().notEmpty().withMessage('message requerido').isLength({ max: 1000 }).withMessage('message máximo 1000 caracteres'),
+    exports.validate,
+];
+exports.adminWeeklyEmailValidation = [
+    (0, express_validator_1.body)('test_email').optional().trim().isEmail().normalizeEmail().withMessage('test_email debe ser un email válido'),
+    exports.validate,
+];
+exports.adminWinnerImageValidation = [
+    (0, express_validator_1.body)('image_url').trim().notEmpty().withMessage('image_url requerida').isURL({ require_protocol: true }).withMessage('image_url debe ser una URL válida'),
+    (0, express_validator_1.body)('matchday_label').optional().trim().isLength({ max: 100 }).withMessage('matchday_label máximo 100 caracteres'),
+    exports.validate,
+];
+exports.adminRecalcMatchdayValidation = [
+    (0, express_validator_1.body)('matchday_id').trim().notEmpty().withMessage('matchday_id requerido').isUUID().withMessage('matchday_id debe ser UUID'),
+    exports.validate,
+];
+exports.adminSendWelcomeValidation = [
+    (0, express_validator_1.body)('email').trim().isEmail().normalizeEmail().withMessage('email inválido'),
+    exports.validate,
+];
+exports.adminTriggerWinnerValidation = [
+    (0, express_validator_1.body)('email').trim().isEmail().normalizeEmail().withMessage('email inválido'),
+    (0, express_validator_1.body)('matchday_id').optional().isUUID().withMessage('matchday_id debe ser UUID'),
+    (0, express_validator_1.body)('matchday_name').optional().trim().isLength({ max: 100 }).withMessage('matchday_name máximo 100 caracteres'),
+    (0, express_validator_1.body)('points').optional().isInt({ min: 0, max: 999 }).withMessage('points debe ser un entero 0-999'),
     exports.validate,
 ];
 //# sourceMappingURL=validation.js.map
