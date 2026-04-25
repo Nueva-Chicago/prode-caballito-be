@@ -152,7 +152,6 @@ const sendWelcomeEmail = async (email, nombre) => {
   <tr>
     <td style="background:#f0f0f0;padding:24px 20px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        ${avatarBlock}
         <tr>
           <!-- Columna izquierda -->
           <td width="56%" valign="top" style="padding-right:12px;">
@@ -221,6 +220,15 @@ const sendWelcomeEmail = async (email, nombre) => {
       </table>
     </td>
   </tr>
+
+  <!-- ── BLOQUE 4.5: AVATAR (solo si tiene foto) ── -->
+  ${fotoUrl ? `<tr>
+    <td style="background:#fff;padding:20px 20px 0;text-align:center;">
+      <img src="${fotoUrl}" alt="Tu foto" width="80" height="80"
+           style="border-radius:50%;border:3px solid #FFB700;object-fit:cover;display:inline-block;" />
+      <div style="color:#333;font-size:13px;font-family:Arial,sans-serif;margin-top:8px;">Hola de nuevo, <strong>${nombre}</strong> 👋</div>
+    </td>
+  </tr>` : ''}
 
   <!-- ── BLOQUE 5: STATS + CÓMO FUNCIONA (fondo blanco) ── -->
   <tr>
