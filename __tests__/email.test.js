@@ -104,7 +104,7 @@ describe('sendWelcomeEmail', () => {
     expect(body.html).not.toContain('Tu foto')
   })
 
-  it('incluye avatar cuando el usuario tiene foto_url', async () => {
+  it('incluye avatar entre la alerta y los stats cuando el usuario tiene foto_url', async () => {
     mockDbQuery.mockReset()
     mockDbQuery
       .mockResolvedValueOnce({ rows: [{ total: 10 }] })
@@ -114,6 +114,12 @@ describe('sendWelcomeEmail', () => {
     expect(body.html).toContain('https://cdn.example.com/avatar.jpg')
     expect(body.html).toContain('Tu foto')
     expect(body.html).toContain('border-radius:50%')
+    // el avatar aparece después de la alerta y antes de los stats
+    const alertaPos = body.html.indexOf('NO TE QUEDES AFUERA')
+    const avatarPos = body.html.indexOf('cdn.example.com')
+    const statsPos  = body.html.indexOf('JUGADORES')
+    expect(avatarPos).toBeGreaterThan(alertaPos)
+    expect(avatarPos).toBeLessThan(statsPos)
   })
 
   it('HTML es válido (tiene doctype, head y body)', async () => {
