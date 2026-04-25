@@ -193,24 +193,20 @@ const sendWelcomeEmail = async (email, nombre) => {
     </td>
   </tr>
 
-  <!-- ── BLOQUE 4: ALERTA (fondo oscuro, ⚠️ izq, avatar centro, 🔥 der) ── -->
+  <!-- ── BLOQUE 4: ALERTA (fondo oscuro, avatar izq, texto centro, 🔥 der) ── -->
   <tr>
     <td style="background:#222;padding:20px 24px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <!-- Ícono advertencia -->
-          <td width="52" valign="middle" style="padding-right:14px;">
-            <div style="width:44px;height:44px;background:#FFB700;border-radius:50%;text-align:center;line-height:44px;font-size:22px;">⚠️</div>
-          </td>
-          <!-- Texto -->
-          <td valign="middle">
+          <!-- Avatar izquierda (si tiene foto) -->
+          ${avatarTd}
+          <!-- Texto central -->
+          <td valign="middle" style="padding:0 12px;">
             <div style="color:#fff;font-size:15px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;margin-bottom:4px;">NO TE QUEDES AFUERA</div>
             <div style="color:#ccc;font-size:12px;font-family:Arial,sans-serif;margin-bottom:3px;">Los primeros partidos ya se están jugando.</div>
             <div style="color:#fff;font-size:12px;font-family:Arial,sans-serif;">Si no apostás ahora, <strong>perdés puntos.</strong></div>
           </td>
-          <!-- Avatar (si tiene foto) -->
-          ${avatarTd}
-          <!-- Llama -->
+          <!-- Llama derecha -->
           <td width="44" valign="middle" align="right">
             <div style="font-size:36px;line-height:1;">🔥</div>
           </td>
