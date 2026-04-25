@@ -197,7 +197,7 @@ const sendWelcomeEmail = async (email, nombre) => {
     </td>
   </tr>
 
-  <!-- ── BLOQUE 4: ALERTA (fondo oscuro, ⚠️ izq, ⚽🔥 der) ── -->
+  <!-- ── BLOQUE 4: ALERTA (fondo oscuro, ⚠️ izq, avatar centro, 🔥 der) ── -->
   <tr>
     <td style="background:#222;padding:20px 24px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -206,29 +206,25 @@ const sendWelcomeEmail = async (email, nombre) => {
           <td width="52" valign="middle" style="padding-right:14px;">
             <div style="width:44px;height:44px;background:#FFB700;border-radius:50%;text-align:center;line-height:44px;font-size:22px;">⚠️</div>
           </td>
-          <!-- Texto central -->
+          <!-- Texto -->
           <td valign="middle">
             <div style="color:#fff;font-size:15px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;margin-bottom:4px;">NO TE QUEDES AFUERA</div>
             <div style="color:#ccc;font-size:12px;font-family:Arial,sans-serif;margin-bottom:3px;">Los primeros partidos ya se están jugando.</div>
             <div style="color:#fff;font-size:12px;font-family:Arial,sans-serif;">Si no apostás ahora, <strong>perdés puntos.</strong></div>
           </td>
-          <!-- Pelota de fuego -->
-          <td width="52" valign="middle" align="right" style="padding-left:10px;">
+          <!-- Avatar (si tiene foto) -->
+          ${fotoUrl ? `<td width="72" valign="middle" align="center" style="padding:0 10px;">
+            <img src="${fotoUrl}" alt="${nombre}" width="60" height="60"
+                 style="border-radius:50%;border:2px solid #FFB700;object-fit:cover;display:block;" />
+          </td>` : ''}
+          <!-- Llama -->
+          <td width="44" valign="middle" align="right">
             <div style="font-size:36px;line-height:1;">🔥</div>
           </td>
         </tr>
       </table>
     </td>
   </tr>
-
-  <!-- ── BLOQUE 4.5: AVATAR (solo si tiene foto) ── -->
-  ${fotoUrl ? `<tr>
-    <td style="background:#fff;padding:20px 20px 0;text-align:center;">
-      <img src="${fotoUrl}" alt="Tu foto" width="80" height="80"
-           style="border-radius:50%;border:3px solid #FFB700;object-fit:cover;display:inline-block;" />
-      <div style="color:#333;font-size:13px;font-family:Arial,sans-serif;margin-top:8px;">Hola de nuevo, <strong>${nombre}</strong> 👋</div>
-    </td>
-  </tr>` : ''}
 
   <!-- ── BLOQUE 5: STATS + CÓMO FUNCIONA (fondo blanco) ── -->
   <tr>
