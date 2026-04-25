@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendRankingUpdateEmail = exports.sendVerificationCode = exports.sendWelcomeEmail = exports.sendEmail = void 0;
+const { db } = require('../db/connection');
 const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_m3NekW1Y_23CkRZqbVhH24yuU4C6XuNYe';
 const FROM_EMAIL = 'noreply@prodecaballito.com';
 const sendEmail = async ({ to, subject, html }) => {
@@ -78,6 +79,8 @@ const sendRankingUpdateEmail = async (userEmail, userName, newPosition, previous
 };
 exports.sendRankingUpdateEmail = sendRankingUpdateEmail;
 const sendWelcomeEmail = async (email, nombre) => {
+    const { rows } = await db.query('SELECT COUNT(*) as total FROM users');
+    const totalJugadores = Number(rows[0]?.total || 0).toLocaleString('es-AR');
     const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -218,7 +221,7 @@ const sendWelcomeEmail = async (email, nombre) => {
               <div style="display:inline-block;width:36px;height:36px;background:#F47C00;border-radius:50%;text-align:center;line-height:36px;font-size:18px;">👥</div>
             </div>
             <div style="color:#666;font-size:9px;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">YA HAY</div>
-            <div style="color:#1a2b4a;font-size:28px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:1;margin-bottom:0;">1.248 JUGADORES</div>
+            <div style="color:#1a2b4a;font-size:28px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:1;margin-bottom:0;">${totalJugadores} JUGADORES</div>
             <div style="color:#1a2b4a;font-size:12px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:6px;">COMPITIENDO</div>
             <div style="color:#888;font-size:11px;font-family:Arial,sans-serif;">¿Podés meterte en el top 10?</div>
           </td>
