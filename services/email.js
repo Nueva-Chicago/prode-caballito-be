@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendRankingUpdateEmail = exports.sendVerificationCode = exports.sendWelcomeEmail = exports.sendEmail = void 0;
 const { db } = require('../db/connection');
 const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_m3NekW1Y_23CkRZqbVhH24yuU4C6XuNYe';
-const FROM_EMAIL = 'noreply@prodecaballito.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@prodecaballito.com';
+const FROM_NAME = process.env.FROM_NAME || 'PRODE Nueva Chicago';
 const sendEmail = async ({ to, subject, html }) => {
     const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -11,7 +12,7 @@ const sendEmail = async ({ to, subject, html }) => {
             'Authorization': `Bearer ${RESEND_API_KEY}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ from: `PRODE Caballito <${FROM_EMAIL}>`, to, subject, html }),
+        body: JSON.stringify({ from: `${FROM_NAME} <${FROM_EMAIL}>`, to, subject, html }),
     });
     if (!res.ok) {
         const err = await res.text();
@@ -56,16 +57,16 @@ const sendRankingUpdateEmail = async (userEmail, userName, newPosition, previous
     </head>
     <body>
       <div class="container">
-        <h1>🏆 PRODE Caballito</h1>
+        <h1>🏆 PRODE Nueva Chicago</h1>
         <p>Hola ${userName},</p>
         <p>${emoji} ${message}</p>
         <div class="ranking">
           <div class="position">#${newPosition}</div>
           <div class="points">${points} puntos</div>
         </div>
-        <p>Ver todos los resultados en: <a href="https://d2vjb37mnj30m1.cloudfront.net/ranking">PRODE Caballito</a></p>
+        <p>Ver todos los resultados en: <a href="https://d2as0lzbgx19o9.cloudfront.net/ranking">PRODE Nueva Chicago</a></p>
         <div class="footer">
-          © 2026 PRODE Caballito
+          © 2026 PRODE Nueva Chicago
         </div>
       </div>
     </body>
@@ -73,7 +74,7 @@ const sendRankingUpdateEmail = async (userEmail, userName, newPosition, previous
   `;
     await (0, exports.sendEmail)({
         to: userEmail,
-        subject: `🏆 PRODE Caballito - Posición #${newPosition}`,
+        subject: `🏆 PRODE Nueva Chicago - Posición #${newPosition}`,
         html,
     });
 };
@@ -94,7 +95,7 @@ const sendWelcomeEmail = async (email, nombre) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bienvenido - PRODE Caballito</title>
+  <title>Bienvenido - PRODE Nueva Chicago</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
 
@@ -115,7 +116,7 @@ const sendWelcomeEmail = async (email, nombre) => {
                 </td>
                 <td valign="middle">
                   <div style="color:#fff;font-size:13px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:1.1;letter-spacing:0.5px;">PRODE</div>
-                  <div style="color:#fff;font-size:10px;font-weight:400;font-family:Arial,sans-serif;letter-spacing:1px;">CABALLITO</div>
+                  <div style="color:#fff;font-size:10px;font-weight:400;font-family:Arial,sans-serif;letter-spacing:1px;">NUEVA CHICAGO</div>
                 </td>
               </tr>
             </table>
@@ -130,7 +131,7 @@ const sendWelcomeEmail = async (email, nombre) => {
 
   <!-- ── BLOQUE 2: HERO (foto estadio real + overlay oscuro) ── -->
   <tr>
-    <td bgcolor="#0a1628" style="background-image:url('https://prodecaballito.com/ChatGPT%20Image%20Apr%2025%2C%202026%2C%2005_00_01%20PM.png');background-size:cover;background-position:center top;background-color:#0a1628;">
+    <td bgcolor="#0a1628" style="background-image:url('https://chicago.prodecaballito.com/ChatGPT%20Image%20Apr%2025%2C%202026%2C%2005_00_01%20PM.png');background-size:cover;background-position:center top;background-color:#0a1628;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td style="background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);padding:48px 28px 44px;">
@@ -270,7 +271,7 @@ const sendWelcomeEmail = async (email, nombre) => {
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td align="center">
-            <a href="https://prodecaballito.com" style="display:block;background:#F47C00;color:#fff;text-decoration:none;padding:16px 20px;border-radius:8px;font-size:17px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;text-align:center;">
+            <a href="https://chicago.prodecaballito.com" style="display:block;background:#F47C00;color:#fff;text-decoration:none;padding:16px 20px;border-radius:8px;font-size:17px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;text-align:center;">
               ⚽ &nbsp;EMPEZAR A JUGAR AHORA →
             </a>
           </td>
@@ -300,8 +301,8 @@ const sendWelcomeEmail = async (email, nombre) => {
   <!-- ── BLOQUE 8: FOOTER LEGAL (blanco) ── -->
   <tr>
     <td style="background:#fff;padding:16px 20px;text-align:center;border-top:1px solid #eee;">
-      <div style="color:#666;font-size:12px;font-family:Arial,sans-serif;margin-bottom:5px;">Con cariño, el equipo de <strong>PRODE Caballito</strong> ❤️</div>
-      <div style="color:#aaa;font-size:10px;font-family:Arial,sans-serif;">Si no querés recibir más correos, podés <a href="https://prodecaballito.com" style="color:#aaa;text-decoration:underline;">darte de baja aquí</a>.</div>
+      <div style="color:#666;font-size:12px;font-family:Arial,sans-serif;margin-bottom:5px;">Con cariño, el equipo de <strong>PRODE Nueva Chicago</strong> ❤️</div>
+      <div style="color:#aaa;font-size:10px;font-family:Arial,sans-serif;">Si no querés recibir más correos, podés <a href="https://chicago.prodecaballito.com" style="color:#aaa;text-decoration:underline;">darte de baja aquí</a>.</div>
     </td>
   </tr>
 
@@ -326,25 +327,25 @@ const sendVerificationCode = async (email, nombre, code) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Código de Verificación - PRODE Caballito</title>
+  <title>Código de Verificación - PRODE Nueva Chicago</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
   <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background: linear-gradient(135deg, #0042A5 0%, #001A4B 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
-      <h1 style="color: white; margin: 0; font-size: 28px;">⚽ PRODE Caballito</h1>
-      <p style="color: #FFDF00; margin: 10px 0 0 0; font-size: 14px;">⚡ Mundial 2026</p>
+    <div style="background: linear-gradient(135deg, #00923f 0%, #001A4B 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+      <h1 style="color: white; margin: 0; font-size: 28px;">⚽ PRODE Nueva Chicago</h1>
+      <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px;">⚡ Mundial 2026</p>
     </div>
     <div style="background: white; padding: 40px 30px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
       <h2 style="color: #1F2937; margin-top: 0;">¡Hola ${nombre}! 👋</h2>
       <p style="color: #4B5563; line-height: 1.6;">
-        Gracias por registrarte en PRODE Caballito. Para completar tu registro, 
+        Gracias por registrarte en PRODE Nueva Chicago. Para completar tu registro, 
         usa el siguiente código de verificación:
       </p>
-      <div style="background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); padding: 30px; margin: 30px 0; text-align: center; border-radius: 12px; border: 3px dashed #0042A5;">
+      <div style="background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); padding: 30px; margin: 30px 0; text-align: center; border-radius: 12px; border: 3px dashed #00923f;">
         <p style="color: #6B7280; margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">
           Tu Código
         </p>
-        <div style="font-size: 42px; font-weight: bold; color: #0042A5; letter-spacing: 12px; font-family: 'Courier New', monospace;">
+        <div style="font-size: 42px; font-weight: bold; color: #00923f; letter-spacing: 12px; font-family: 'Courier New', monospace;">
           ${code}
         </div>
       </div>
@@ -358,7 +359,7 @@ const sendVerificationCode = async (email, nombre, code) => {
       </p>
     </div>
     <div style="text-align: center; padding: 20px; color: #9CA3AF; font-size: 12px;">
-      <p style="margin: 5px 0;">© 2026 PRODE Caballito - Qatar 2026</p>
+      <p style="margin: 5px 0;">© 2026 PRODE Nueva Chicago - Mundial 2026</p>
       <p style="margin: 5px 0;">Este es un email automático, por favor no respondas.</p>
     </div>
   </div>
@@ -367,7 +368,7 @@ const sendVerificationCode = async (email, nombre, code) => {
   `;
     await (0, exports.sendEmail)({
         to: email,
-        subject: '🎯 Código de Verificación - PRODE Caballito',
+        subject: '🎯 Código de Verificación - PRODE Nueva Chicago',
         html,
     });
 };
@@ -395,8 +396,8 @@ const sendReminderEmail = async (reminder) => {
       <!-- Header -->
       <tr><td align="center" style="padding-bottom:24px;">
         <p style="margin:0;font-size:40px;line-height:1;">⏰</p>
-        <h1 style="color:#ffffff;margin:10px 0 0;font-size:26px;font-weight:800;font-family:Arial,sans-serif;">PRODE Caballito</h1>
-        <p style="color:#FFDF00;margin:6px 0 0;font-size:14px;font-weight:600;font-family:Arial,sans-serif;">
+        <h1 style="color:#ffffff;margin:10px 0 0;font-size:26px;font-weight:800;font-family:Arial,sans-serif;">PRODE Nueva Chicago</h1>
+        <p style="color:#ffffff;margin:6px 0 0;font-size:14px;font-weight:600;font-family:Arial,sans-serif;">
           Recordatorio — ${remind_minutes} min antes del partido
         </p>
       </td></tr>
@@ -409,7 +410,7 @@ const sendReminderEmail = async (reminder) => {
           <tr><td bgcolor="#FFCC00" align="center" style="padding:32px 30px;border-radius:20px 20px 0 0;">
             <p style="margin:0 0 6px;color:#001A4B;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;">Próximo partido</p>
             <h2 style="color:#001A4B;margin:0;font-size:26px;font-weight:900;font-family:Arial,sans-serif;">${home_team} vs ${away_team}</h2>
-            <p style="color:#0042A5;margin:10px 0 0;font-size:15px;font-weight:700;font-family:Arial,sans-serif;">🕐 ${fmtAR(start_time)} hs</p>
+            <p style="color:#00923f;margin:10px 0 0;font-size:15px;font-weight:700;font-family:Arial,sans-serif;">🕐 ${fmtAR(start_time)} hs</p>
           </td></tr>
         </table>
 
@@ -429,10 +430,10 @@ const sendReminderEmail = async (reminder) => {
             ${hasBet ? `
             <!-- Tu pronóstico -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EFF6FF" style="border-radius:14px;margin-bottom:24px;">
-              <tr><td style="padding:20px 24px;border-left:4px solid #0042A5;border-radius:14px;">
-                <p style="color:#0042A5;margin:0 0 8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;">Tu pronóstico guardado</p>
+              <tr><td style="padding:20px 24px;border-left:4px solid #00923f;border-radius:14px;">
+                <p style="color:#00923f;margin:0 0 8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;">Tu pronóstico guardado</p>
                 <p style="color:#001A4B;margin:0;font-size:30px;font-weight:900;text-align:center;font-family:Arial,sans-serif;">
-                  ${home_team} <span style="color:#0042A5;">${goles_local} — ${goles_visitante}</span> ${away_team}
+                  ${home_team} <span style="color:#00923f;">${goles_local} — ${goles_visitante}</span> ${away_team}
                 </p>
               </td></tr>
             </table>
@@ -449,15 +450,15 @@ const sendReminderEmail = async (reminder) => {
             <!-- CTA -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
               <tr><td align="center">
-                <a href="https://prodecaballito.com/apuestas"
-                   style="display:inline-block;background-color:#0042A5;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:50px;font-size:17px;font-weight:700;font-family:Arial,sans-serif;">
+                <a href="https://chicago.prodecaballito.com/apuestas"
+                   style="display:inline-block;background-color:#00923f;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:50px;font-size:17px;font-weight:700;font-family:Arial,sans-serif;">
                   ⚽ Ver mis pronósticos
                 </a>
               </td></tr>
             </table>
 
             <p style="color:#9CA3AF;font-size:12px;text-align:center;margin:0;font-family:Arial,sans-serif;">
-              Con cariño, el equipo de <strong>PRODE Caballito</strong> 💙
+              Con cariño, el equipo de <strong>PRODE Nueva Chicago</strong> 💙
             </p>
           </td></tr>
         </table>
@@ -466,7 +467,7 @@ const sendReminderEmail = async (reminder) => {
       <!-- Footer -->
       <tr><td align="center" style="padding-top:20px;">
         <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;font-family:Arial,sans-serif;">
-          © 2026 PRODE Caballito · <a href="https://prodecaballito.com" style="color:rgba(255,255,255,0.6);text-decoration:none;">prodecaballito.com</a>
+          © 2026 PRODE Nueva Chicago · <a href="https://chicago.prodecaballito.com" style="color:rgba(255,255,255,0.6);text-decoration:none;">chicago.prodecaballito.com</a>
         </p>
       </td></tr>
 
@@ -477,7 +478,7 @@ const sendReminderEmail = async (reminder) => {
 
     await (0, exports.sendEmail)({
         to: user_email,
-        subject: `⏰ En ${remind_minutes} min: ${home_team} vs ${away_team} — PRODE Caballito`,
+        subject: `⏰ En ${remind_minutes} min: ${home_team} vs ${away_team} — PRODE Nueva Chicago`,
         html,
     });
 };
@@ -517,7 +518,7 @@ const sendResultEmail = async ({ userEmail, userName, homeTeam, awayTeam, result
     <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
       <!-- Header -->
       <tr><td style="background-color:#001A4B;padding:28px 32px;text-align:center;">
-        <p style="margin:0;font-size:24px;font-weight:900;color:#FFFFFF;font-family:Arial,sans-serif;letter-spacing:1px;">⚽ PRODE Caballito</p>
+        <p style="margin:0;font-size:24px;font-weight:900;color:#FFFFFF;font-family:Arial,sans-serif;letter-spacing:1px;">⚽ PRODE Nueva Chicago</p>
         <p style="margin:6px 0 0;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;">Resultado publicado</p>
       </td></tr>
       <!-- Score banner -->
@@ -533,13 +534,13 @@ const sendResultEmail = async ({ userEmail, userName, homeTeam, awayTeam, result
         ${rankingPanel}
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr><td align="center">
-            <a href="https://prodecaballito.com/ranking" style="display:inline-block;background-color:#0042A5;color:#FFFFFF;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:14px 32px;border-radius:50px;">Ver ranking completo →</a>
+            <a href="https://chicago.prodecaballito.com/ranking" style="display:inline-block;background-color:#00923f;color:#FFFFFF;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:14px 32px;border-radius:50px;">Ver ranking completo →</a>
           </td></tr>
         </table>
       </td></tr>
       <!-- Footer -->
       <tr><td style="background-color:#F8FAFC;padding:16px 32px;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#9CA3AF;font-family:Arial,sans-serif;">prodecaballito.com</p>
+        <p style="margin:0;font-size:11px;color:#9CA3AF;font-family:Arial,sans-serif;">chicago.prodecaballito.com</p>
       </td></tr>
     </table>
   </td></tr>
@@ -548,7 +549,7 @@ const sendResultEmail = async ({ userEmail, userName, homeTeam, awayTeam, result
 
     await sendEmail({
         to: userEmail,
-        subject: `⚽ Resultado: ${homeTeam} ${resultLocal}-${resultVisitante} ${awayTeam} — PRODE Caballito`,
+        subject: `⚽ Resultado: ${homeTeam} ${resultLocal}-${resultVisitante} ${awayTeam} — PRODE Nueva Chicago`,
         html,
     });
 };
@@ -564,7 +565,7 @@ const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayT
       <tr><td style="background-color:#001A4B;padding:32px 32px 24px;text-align:center;">
         <p style="margin:0;font-size:48px;line-height:1;">🔥</p>
         <p style="margin:10px 0 4px;font-size:22px;font-weight:900;color:#FFCC00;font-family:Arial,sans-serif;letter-spacing:1px;">¡NUEVO LÍDER!</p>
-        <p style="margin:0;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;">PRODE Caballito</p>
+        <p style="margin:0;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;">PRODE Nueva Chicago</p>
       </td></tr>
       <!-- Banner resultado -->
       <tr><td style="background-color:#FFCC00;padding:14px 32px;text-align:center;">
@@ -574,11 +575,11 @@ const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayT
       <tr><td style="background-color:#FFFFFF;padding:32px 32px 28px;">
         <p style="margin:0 0 8px;font-size:18px;font-weight:900;color:#001A4B;font-family:Arial,sans-serif;">¡Hola, ${userName}! 👋</p>
         <p style="margin:0 0 24px;font-size:15px;color:#374151;font-family:Arial,sans-serif;line-height:1.6;">
-          Después del resultado de hoy, <strong>subiste al primer puesto</strong> del ranking de PRODE Caballito. ¡Bien jugado!
+          Después del resultado de hoy, <strong>subiste al primer puesto</strong> del ranking de PRODE Nueva Chicago. ¡Bien jugado!
         </p>
         <!-- Podio card -->
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
-          <tr><td style="background:linear-gradient(135deg,#001A4B 0%,#0042A5 100%);border-radius:14px;padding:24px;text-align:center;">
+          <tr><td style="background:linear-gradient(135deg,#001A4B 0%,#00923f 100%);border-radius:14px;padding:24px;text-align:center;">
             <p style="margin:0 0 4px;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">Posición actual</p>
             <p style="margin:0;font-size:56px;font-weight:900;color:#FFCC00;font-family:Arial,sans-serif;line-height:1;">🥇</p>
             <p style="margin:6px 0 0;font-size:20px;font-weight:900;color:#FFFFFF;font-family:Arial,sans-serif;">${puntos} puntos</p>
@@ -590,13 +591,13 @@ const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayT
         </p>
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr><td align="center">
-            <a href="https://prodecaballito.com/ranking" style="display:inline-block;background-color:#0042A5;color:#FFFFFF;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:14px 36px;border-radius:50px;">Ver el ranking completo →</a>
+            <a href="https://chicago.prodecaballito.com/ranking" style="display:inline-block;background-color:#00923f;color:#FFFFFF;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;padding:14px 36px;border-radius:50px;">Ver el ranking completo →</a>
           </td></tr>
         </table>
       </td></tr>
       <!-- Footer -->
       <tr><td style="background-color:#F8FAFC;padding:16px 32px;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#9CA3AF;font-family:Arial,sans-serif;">prodecaballito.com</p>
+        <p style="margin:0;font-size:11px;color:#9CA3AF;font-family:Arial,sans-serif;">chicago.prodecaballito.com</p>
       </td></tr>
     </table>
   </td></tr>
@@ -605,7 +606,7 @@ const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayT
 
     await sendEmail({
         to: userEmail,
-        subject: `🔥 ¡Sos el nuevo líder del PRODE Caballito con ${puntos} pts!`,
+        subject: `🔥 ¡Sos el nuevo líder del PRODE Nueva Chicago con ${puntos} pts!`,
         html,
     });
 };
@@ -790,7 +791,7 @@ const sendWeeklyEmail = async (email, {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tu resumen semanal — PRODE Caballito</title>
+  <title>Tu resumen semanal — PRODE Nueva Chicago</title>
 </head>
 <body style="margin:0;padding:0;background-color:#eef2f7;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eef2f7">
@@ -805,7 +806,7 @@ const sendWeeklyEmail = async (email, {
               <tr>
                 <td>
                   <span style="font-size:22px;vertical-align:middle;">⚽</span>
-                  <strong style="font-size:17px;color:#001A4B;font-family:Arial,sans-serif;vertical-align:middle;"> PRODE Caballito</strong>
+                  <strong style="font-size:17px;color:#001A4B;font-family:Arial,sans-serif;vertical-align:middle;"> PRODE Nueva Chicago</strong>
                 </td>
                 <td align="right">
                   <p style="margin:0;font-size:11px;color:#9ca3af;font-family:Arial,sans-serif;">Resumen semanal</p>
@@ -880,12 +881,12 @@ const sendWeeklyEmail = async (email, {
         <tr>
           <td align="center" bgcolor="#f9fafb" style="padding:22px 24px 26px;border-top:1px solid #f0f4fb;">
             <p style="margin:0;font-size:13px;color:#4b5563;font-family:Arial,sans-serif;line-height:1.7;">
-              Gracias por jugar en <strong>PRODE Caballito</strong> 💙<br>Esta semana puede ser la tuya.
+              Gracias por jugar en <strong>PRODE Nueva Chicago</strong> 💙<br>Esta semana puede ser la tuya.
             </p>
             <p style="margin:14px 0 0;font-size:11px;color:#9ca3af;font-family:Arial,sans-serif;">
               <a href="${unsubscribeUrl}" style="color:#9ca3af;text-decoration:underline;">Cancelar suscripción</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://prodecaballito.com" style="color:#9ca3af;text-decoration:none;">prodecaballito.com</a>
+              <a href="https://chicago.prodecaballito.com" style="color:#9ca3af;text-decoration:none;">chicago.prodecaballito.com</a>
             </p>
           </td>
         </tr>
@@ -899,7 +900,7 @@ const sendWeeklyEmail = async (email, {
 
     await (0, exports.sendEmail)({
         to: email,
-        subject: `⚽ Tu resumen semanal — PRODE Caballito`,
+        subject: `⚽ Tu resumen semanal — PRODE Nueva Chicago`,
         html,
     });
 };
