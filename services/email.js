@@ -131,7 +131,7 @@ const sendWelcomeEmail = async (email, nombre) => {
 
   <!-- ── BLOQUE 2: HERO (foto estadio real + overlay oscuro) ── -->
   <tr>
-    <td bgcolor="#0a1628" style="background-image:url('https://chicago.prodecaballito.com/ChatGPT%20Image%20Apr%2025%2C%202026%2C%2010_48_53%20PM.png');background-size:cover;background-position:center top;background-color:#0a1628;">
+    <td bgcolor="#0a1628" style="background-image:url('https://chicago.prodecaballito.com/hero-estadio.png');background-size:cover;background-position:center top;background-color:#0a1628;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td style="background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);padding:48px 28px 44px;">
