@@ -48,9 +48,9 @@ const sendRankingUpdateEmail = async (userEmail, userName, newPosition, previous
       <style>
         body { font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 30px; }
-        h1 { color: #1a56db; }
+        h1 { color: #00923f; }
         .ranking { background: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; }
-        .position { font-size: 48px; font-weight: bold; color: #1a56db; }
+        .position { font-size: 48px; font-weight: bold; color: #00923f; }
         .points { color: #6b7280; }
         .footer { text-align: center; color: #9ca3af; margin-top: 20px; font-size: 12px; }
       </style>
@@ -87,8 +87,8 @@ const sendWelcomeEmail = async (email, nombre) => {
     const totalJugadores = Number(countResult.rows[0]?.total || 0).toLocaleString('es-AR');
     const fotoUrl = userResult.rows[0]?.foto_url || null;
     const avatarTd = fotoUrl
-      ? `<td width="72" valign="middle" align="center" style="padding:0 12px;"><img src="${fotoUrl}" alt="avatar" width="60" height="60" style="border-radius:50%;border:2px solid #FFB700;object-fit:cover;display:block;margin:0 auto;" /></td>`
-      : `<td width="52" valign="middle" style="padding-right:14px;"><div style="width:44px;height:44px;background:#FFB700;border-radius:50%;text-align:center;line-height:44px;font-size:22px;">⚠️</div></td>`;
+      ? `<td width="72" valign="middle" align="center" style="padding:0 12px;"><img src="${fotoUrl}" alt="avatar" width="60" height="60" style="border-radius:50%;border:2px solid #4ade80;object-fit:cover;display:block;margin:0 auto;" /></td>`
+      : `<td width="52" valign="middle" style="padding-right:14px;"><div style="width:44px;height:44px;background:#4ade80;border-radius:50%;text-align:center;line-height:44px;font-size:22px;">⚠️</div></td>`;
     const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -105,7 +105,7 @@ const sendWelcomeEmail = async (email, nombre) => {
 
   <!-- ── BLOQUE 1: HEADER ── -->
   <tr>
-    <td style="background:#000;padding:14px 20px;">
+    <td style="background:#040404;padding:14px 20px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td valign="middle">
@@ -131,13 +131,13 @@ const sendWelcomeEmail = async (email, nombre) => {
 
   <!-- ── BLOQUE 2: HERO (foto estadio real + overlay oscuro) ── -->
   <tr>
-    <td bgcolor="#0a1628" style="background-image:url('https://chicago.prodecaballito.com/hero-estadio.png');background-size:cover;background-position:center top;background-color:#0a1628;">
+    <td bgcolor="#040404" style="background-image:url('https://chicago.prodecaballito.com/hero-estadio.png');background-size:cover;background-position:center top;background-color:#040404;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td style="background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);padding:48px 28px 44px;">
             <div style="color:#fff;font-size:52px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:4px;">ESTO YA EMPEZÓ</div>
-            <div style="color:#FFB700;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:4px;">¿VAS A JUGAR</div>
-            <div style="color:#FFB700;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:20px;">O MIRAR?</div>
+            <div style="color:#4ade80;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:4px;">¿VAS A JUGAR</div>
+            <div style="color:#4ade80;font-size:44px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:0.95;letter-spacing:-2px;text-transform:uppercase;margin-bottom:20px;">O MIRAR?</div>
             <div style="color:rgba(255,255,255,0.85);font-size:15px;font-family:Arial,sans-serif;">Tus amigos ya están compitiendo.</div>
           </td>
         </tr>
@@ -154,14 +154,14 @@ const sendWelcomeEmail = async (email, nombre) => {
           <td width="56%" valign="top" style="padding-right:12px;">
             <div style="font-size:22px;margin-bottom:6px;">🎉</div>
             <div style="font-size:15px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:1.2;margin-bottom:8px;">
-              <span style="color:#111;">¡YA ESTÁS </span><span style="color:#F47C00;">ADENTRO DEL PRODE!</span>
+              <span style="color:#111;">¡YA ESTÁS </span><span style="color:#00923f;">ADENTRO DEL PRODE!</span>
             </div>
             <div style="color:#333;font-size:13px;font-family:Arial,sans-serif;margin-bottom:12px;">${nombre}, el juego ya empezó.</div>
             <!-- Bullet 1 -->
             <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:7px;">
               <tr>
                 <td valign="middle" style="padding-right:8px;">
-                  <div style="width:20px;height:20px;background:#27AE60;border-radius:50%;text-align:center;line-height:20px;font-size:11px;color:#fff;font-weight:bold;font-family:Arial;">✓</div>
+                  <div style="width:20px;height:20px;background:#00923f;border-radius:50%;text-align:center;line-height:20px;font-size:11px;color:#fff;font-weight:bold;font-family:Arial;">✓</div>
                 </td>
                 <td valign="middle"><span style="color:#333;font-size:13px;font-family:Arial,sans-serif;">Cada partido suma</span></td>
               </tr>
@@ -170,7 +170,7 @@ const sendWelcomeEmail = async (email, nombre) => {
             <table cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td valign="middle" style="padding-right:8px;">
-                  <div style="width:20px;height:20px;background:#27AE60;border-radius:50%;text-align:center;line-height:20px;font-size:11px;color:#fff;font-weight:bold;font-family:Arial;">✓</div>
+                  <div style="width:20px;height:20px;background:#00923f;border-radius:50%;text-align:center;line-height:20px;font-size:11px;color:#fff;font-weight:bold;font-family:Arial;">✓</div>
                 </td>
                 <td valign="middle"><span style="color:#333;font-size:13px;font-family:Arial,sans-serif;">Cada punto te acerca al podio</span></td>
               </tr>
@@ -178,12 +178,12 @@ const sendWelcomeEmail = async (email, nombre) => {
           </td>
           <!-- Columna derecha: card oscura -->
           <td width="44%" valign="middle">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1a1a2e;border-radius:12px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#040404;border-radius:12px;">
               <tr>
                 <td align="center" style="padding:20px 14px;">
                   <div style="font-size:30px;margin-bottom:8px;">🏆</div>
                   <div style="color:#999;font-size:9px;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">TU OBJETIVO:</div>
-                  <div style="color:#FFB700;font-size:17px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;line-height:1.1;margin-bottom:6px;">EL PRIMER<br>PUESTO</div>
+                  <div style="color:#4ade80;font-size:17px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;line-height:1.1;margin-bottom:6px;">EL PRIMER<br>PUESTO</div>
                   <div style="color:rgba(255,255,255,0.5);font-size:11px;font-family:Arial,sans-serif;">¿Estás listo para lograrlo?</div>
                 </td>
               </tr>
@@ -224,37 +224,37 @@ const sendWelcomeEmail = async (email, nombre) => {
           <!-- Columna izquierda: estadística jugadores -->
           <td width="38%" valign="top" style="padding-right:16px;border-right:1px solid #e5e5e5;">
             <div style="margin-bottom:8px;">
-              <div style="display:inline-block;width:36px;height:36px;background:#F47C00;border-radius:50%;text-align:center;line-height:36px;font-size:18px;">👥</div>
+              <div style="display:inline-block;width:36px;height:36px;background:#00923f;border-radius:50%;text-align:center;line-height:36px;font-size:18px;">👥</div>
             </div>
             <div style="color:#666;font-size:9px;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">YA HAY</div>
-            <div style="color:#1a2b4a;font-size:28px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:1;margin-bottom:0;">${totalJugadores} JUGADORES</div>
-            <div style="color:#1a2b4a;font-size:12px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:6px;">COMPITIENDO</div>
+            <div style="color:#040404;font-size:28px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;line-height:1;margin-bottom:0;">${totalJugadores} JUGADORES</div>
+            <div style="color:#040404;font-size:12px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:6px;">COMPITIENDO</div>
             <div style="color:#888;font-size:11px;font-family:Arial,sans-serif;">¿Podés meterte en el top 10?</div>
           </td>
           <!-- Columna derecha: cómo funciona (3 pasos en columna) -->
           <td width="62%" valign="top" style="padding-left:16px;">
-            <div style="color:#1a2b4a;font-size:13px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">¿CÓMO FUNCIONA?</div>
+            <div style="color:#040404;font-size:13px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">¿CÓMO FUNCIONA?</div>
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <!-- Paso 1 -->
                 <td width="33%" valign="top" align="center" style="padding-right:6px;">
-                  <div style="width:28px;height:28px;background:#1a2b4a;border-radius:50%;text-align:center;line-height:28px;font-size:13px;color:#fff;font-weight:bold;font-family:Arial;margin:0 auto 6px;">1</div>
+                  <div style="width:28px;height:28px;background:#040404;border-radius:50%;text-align:center;line-height:28px;font-size:13px;color:#fff;font-weight:bold;font-family:Arial;margin:0 auto 6px;">1</div>
                   <div style="font-size:18px;margin-bottom:4px;">📋</div>
-                  <div style="color:#1a2b4a;font-size:10px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:3px;">APOSTÁ</div>
+                  <div style="color:#040404;font-size:10px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:3px;">APOSTÁ</div>
                   <div style="color:#666;font-size:10px;font-family:Arial,sans-serif;line-height:1.3;">Pronosticá los resultados de cada partido.</div>
                 </td>
                 <!-- Paso 2 -->
                 <td width="33%" valign="top" align="center" style="padding:0 3px;">
-                  <div style="width:28px;height:28px;background:#1a2b4a;border-radius:50%;text-align:center;line-height:28px;font-size:13px;color:#fff;font-weight:bold;font-family:Arial;margin:0 auto 6px;">2</div>
+                  <div style="width:28px;height:28px;background:#040404;border-radius:50%;text-align:center;line-height:28px;font-size:13px;color:#fff;font-weight:bold;font-family:Arial;margin:0 auto 6px;">2</div>
                   <div style="font-size:18px;margin-bottom:4px;">🎯</div>
-                  <div style="color:#1a2b4a;font-size:10px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:3px;">SUMÁ PUNTOS</div>
+                  <div style="color:#040404;font-size:10px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:3px;">SUMÁ PUNTOS</div>
                   <div style="color:#666;font-size:10px;font-family:Arial,sans-serif;line-height:1.3;">Acertá resultados y sumá la mayor cantidad de puntos.</div>
                 </td>
                 <!-- Paso 3 -->
                 <td width="33%" valign="top" align="center" style="padding-left:6px;">
-                  <div style="width:28px;height:28px;background:#1a2b4a;border-radius:50%;text-align:center;line-height:28px;font-size:13px;color:#fff;font-weight:bold;font-family:Arial;margin:0 auto 6px;">3</div>
+                  <div style="width:28px;height:28px;background:#040404;border-radius:50%;text-align:center;line-height:28px;font-size:13px;color:#fff;font-weight:bold;font-family:Arial;margin:0 auto 6px;">3</div>
                   <div style="font-size:18px;margin-bottom:4px;">🏆</div>
-                  <div style="color:#1a2b4a;font-size:10px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:3px;">SUBÍ EN EL RANKING</div>
+                  <div style="color:#040404;font-size:10px;font-weight:700;font-family:Arial,sans-serif;text-transform:uppercase;margin-bottom:3px;">SUBÍ EN EL RANKING</div>
                   <div style="color:#666;font-size:10px;font-family:Arial,sans-serif;line-height:1.3;">Escalá posiciones y competí por increíbles premios.</div>
                 </td>
               </tr>
@@ -271,7 +271,7 @@ const sendWelcomeEmail = async (email, nombre) => {
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td align="center">
-            <a href="https://chicago.prodecaballito.com" style="display:block;background:#F47C00;color:#fff;text-decoration:none;padding:16px 20px;border-radius:8px;font-size:17px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;text-align:center;">
+            <a href="https://chicago.prodecaballito.com" style="display:block;background:#00923f;color:#fff;text-decoration:none;padding:16px 20px;border-radius:8px;font-size:17px;font-weight:900;font-family:'Arial Black',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;text-align:center;">
               ⚽ &nbsp;EMPEZAR A JUGAR AHORA →
             </a>
           </td>
@@ -291,7 +291,7 @@ const sendWelcomeEmail = async (email, nombre) => {
             <div style="color:rgba(255,255,255,0.55);font-size:12px;font-family:Arial,sans-serif;">Entrá ahora y arrancá fuerte.</div>
           </td>
           <td width="45%" valign="middle" align="center">
-            <div style="color:#FFB700;font-size:28px;font-weight:900;font-family:Georgia,'Times New Roman',serif;font-style:italic;line-height:1.1;transform:rotate(-3deg);display:inline-block;">Vamos<br><span style="font-size:34px;">POR TODO!</span></div>
+            <div style="color:#4ade80;font-size:28px;font-weight:900;font-family:Georgia,'Times New Roman',serif;font-style:italic;line-height:1.1;transform:rotate(-3deg);display:inline-block;">Vamos<br><span style="font-size:34px;">POR TODO!</span></div>
           </td>
         </tr>
       </table>
@@ -331,7 +331,7 @@ const sendVerificationCode = async (email, nombre, code) => {
 </head>
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
   <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background: linear-gradient(135deg, #00923f 0%, #001A4B 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+    <div style="background: linear-gradient(135deg, #00923f 0%, #040404 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
       <h1 style="color: white; margin: 0; font-size: 28px;">⚽ PRODE Nueva Chicago</h1>
       <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px;">⚡ Mundial 2026</p>
     </div>
@@ -388,8 +388,8 @@ const sendReminderEmail = async (reminder) => {
 <!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#001A4B;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#001A4B">
+<body style="margin:0;padding:0;background-color:#040404;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#040404">
   <tr><td align="center" style="padding:40px 20px;">
     <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
@@ -405,12 +405,12 @@ const sendReminderEmail = async (reminder) => {
       <!-- Main card -->
       <tr><td style="background-color:#ffffff;border-radius:20px;overflow:hidden;">
 
-        <!-- Yellow banner -->
+        <!-- Match banner -->
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          <tr><td bgcolor="#FFCC00" align="center" style="padding:32px 30px;border-radius:20px 20px 0 0;">
-            <p style="margin:0 0 6px;color:#001A4B;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;">Próximo partido</p>
-            <h2 style="color:#001A4B;margin:0;font-size:26px;font-weight:900;font-family:Arial,sans-serif;">${home_team} vs ${away_team}</h2>
-            <p style="color:#00923f;margin:10px 0 0;font-size:15px;font-weight:700;font-family:Arial,sans-serif;">🕐 ${fmtAR(start_time)} hs</p>
+          <tr><td bgcolor="#00923f" align="center" style="padding:32px 30px;border-radius:20px 20px 0 0;">
+            <p style="margin:0 0 6px;color:rgba(255,255,255,0.75);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;">Próximo partido</p>
+            <h2 style="color:#ffffff;margin:0;font-size:26px;font-weight:900;font-family:Arial,sans-serif;">${home_team} vs ${away_team}</h2>
+            <p style="color:rgba(255,255,255,0.85);margin:10px 0 0;font-size:15px;font-weight:700;font-family:Arial,sans-serif;">🕐 ${fmtAR(start_time)} hs</p>
           </td></tr>
         </table>
 
@@ -432,7 +432,7 @@ const sendReminderEmail = async (reminder) => {
             <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EFF6FF" style="border-radius:14px;margin-bottom:24px;">
               <tr><td style="padding:20px 24px;border-left:4px solid #00923f;border-radius:14px;">
                 <p style="color:#00923f;margin:0 0 8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;">Tu pronóstico guardado</p>
-                <p style="color:#001A4B;margin:0;font-size:30px;font-weight:900;text-align:center;font-family:Arial,sans-serif;">
+                <p style="color:#040404;margin:0;font-size:30px;font-weight:900;text-align:center;font-family:Arial,sans-serif;">
                   ${home_team} <span style="color:#00923f;">${goles_local} — ${goles_visitante}</span> ${away_team}
                 </p>
               </td></tr>
@@ -458,7 +458,7 @@ const sendReminderEmail = async (reminder) => {
             </table>
 
             <p style="color:#9CA3AF;font-size:12px;text-align:center;margin:0;font-family:Arial,sans-serif;">
-              Con cariño, el equipo de <strong>PRODE Nueva Chicago</strong> 💙
+              Con cariño, el equipo de <strong>PRODE Nueva Chicago</strong> 💚
             </p>
           </td></tr>
         </table>
@@ -495,7 +495,7 @@ const sendResultEmail = async ({ userEmail, userName, homeTeam, awayTeam, result
     const betPanel = hasBet ? `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
         <tr><td style="background:#EFF6FF;border-radius:10px;padding:16px;text-align:center;">
-          <p style="margin:0 0 6px;font-size:13px;color:#1E40AF;font-family:Arial,sans-serif;">Tu pronóstico</p>
+          <p style="margin:0 0 6px;font-size:13px;color:#00923f;font-family:Arial,sans-serif;">Tu pronóstico</p>
           <p style="margin:0;font-size:28px;font-weight:900;color:${ptsColor};font-family:Arial,sans-serif;">${betLocal} — ${betVisitante}</p>
           <p style="margin:6px 0 0;font-size:14px;font-weight:bold;color:${ptsColor};font-family:Arial,sans-serif;">${ptsLabel} &nbsp;·&nbsp; +${puntos} pts</p>
         </td></tr>
@@ -512,23 +512,23 @@ const sendResultEmail = async ({ userEmail, userName, homeTeam, awayTeam, result
       </p>` : '';
 
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background-color:#F1F5F9;">
+<body style="margin:0;padding:0;background-color:#f4f4f4;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr><td align="center" style="padding:32px 16px;">
     <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
       <!-- Header -->
-      <tr><td style="background-color:#001A4B;padding:28px 32px;text-align:center;">
+      <tr><td style="background-color:#040404;padding:28px 32px;text-align:center;">
         <p style="margin:0;font-size:24px;font-weight:900;color:#FFFFFF;font-family:Arial,sans-serif;letter-spacing:1px;">⚽ PRODE Nueva Chicago</p>
-        <p style="margin:6px 0 0;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;">Resultado publicado</p>
+        <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,0.65);font-family:Arial,sans-serif;">Resultado publicado</p>
       </td></tr>
       <!-- Score banner -->
-      <tr><td style="background-color:#FFCC00;padding:20px 32px;text-align:center;">
-        <p style="margin:0;font-size:13px;font-weight:bold;color:#78350F;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">${homeTeam} vs ${awayTeam}</p>
-        <p style="margin:8px 0 0;font-size:48px;font-weight:900;color:#001A4B;font-family:Arial,sans-serif;letter-spacing:4px;">${resultLocal} — ${resultVisitante}</p>
+      <tr><td style="background-color:#00923f;padding:20px 32px;text-align:center;">
+        <p style="margin:0;font-size:13px;font-weight:bold;color:rgba(255,255,255,0.75);font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">${homeTeam} vs ${awayTeam}</p>
+        <p style="margin:8px 0 0;font-size:48px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;letter-spacing:4px;">${resultLocal} — ${resultVisitante}</p>
       </td></tr>
       <!-- Body -->
       <tr><td style="background-color:#FFFFFF;padding:28px 32px;">
-        <p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:#001A4B;font-family:Arial,sans-serif;">Hola, ${userName}!</p>
+        <p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:#040404;font-family:Arial,sans-serif;">Hola, ${userName}!</p>
         <p style="margin:0 0 16px;font-size:14px;color:#6B7280;font-family:Arial,sans-serif;">Ya podés ver cuántos puntos sumaste en este partido.</p>
         ${betPanel}
         ${rankingPanel}
@@ -557,33 +557,33 @@ exports.sendResultEmail = sendResultEmail;
 
 const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayTeam, resultLocal, resultVisitante }) => {
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background-color:#F1F5F9;">
+<body style="margin:0;padding:0;background-color:#f4f4f4;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr><td align="center" style="padding:32px 16px;">
     <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
       <!-- Header -->
-      <tr><td style="background-color:#001A4B;padding:32px 32px 24px;text-align:center;">
+      <tr><td style="background-color:#040404;padding:32px 32px 24px;text-align:center;">
         <p style="margin:0;font-size:48px;line-height:1;">🔥</p>
-        <p style="margin:10px 0 4px;font-size:22px;font-weight:900;color:#FFCC00;font-family:Arial,sans-serif;letter-spacing:1px;">¡NUEVO LÍDER!</p>
-        <p style="margin:0;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;">PRODE Nueva Chicago</p>
+        <p style="margin:10px 0 4px;font-size:22px;font-weight:900;color:#4ade80;font-family:Arial,sans-serif;letter-spacing:1px;">¡NUEVO LÍDER!</p>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.65);font-family:Arial,sans-serif;">PRODE Nueva Chicago</p>
       </td></tr>
       <!-- Banner resultado -->
-      <tr><td style="background-color:#FFCC00;padding:14px 32px;text-align:center;">
-        <p style="margin:0;font-size:12px;font-weight:bold;color:#78350F;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">⚽ ${homeTeam} ${resultLocal}–${resultVisitante} ${awayTeam}</p>
+      <tr><td style="background-color:#00923f;padding:14px 32px;text-align:center;">
+        <p style="margin:0;font-size:12px;font-weight:bold;color:rgba(255,255,255,0.85);font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">⚽ ${homeTeam} ${resultLocal}–${resultVisitante} ${awayTeam}</p>
       </td></tr>
       <!-- Body -->
       <tr><td style="background-color:#FFFFFF;padding:32px 32px 28px;">
-        <p style="margin:0 0 8px;font-size:18px;font-weight:900;color:#001A4B;font-family:Arial,sans-serif;">¡Hola, ${userName}! 👋</p>
+        <p style="margin:0 0 8px;font-size:18px;font-weight:900;color:#040404;font-family:Arial,sans-serif;">¡Hola, ${userName}! 👋</p>
         <p style="margin:0 0 24px;font-size:15px;color:#374151;font-family:Arial,sans-serif;line-height:1.6;">
           Después del resultado de hoy, <strong>subiste al primer puesto</strong> del ranking de PRODE Nueva Chicago. ¡Bien jugado!
         </p>
         <!-- Podio card -->
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
-          <tr><td style="background:linear-gradient(135deg,#001A4B 0%,#00923f 100%);border-radius:14px;padding:24px;text-align:center;">
-            <p style="margin:0 0 4px;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">Posición actual</p>
-            <p style="margin:0;font-size:56px;font-weight:900;color:#FFCC00;font-family:Arial,sans-serif;line-height:1;">🥇</p>
+          <tr><td style="background:linear-gradient(135deg,#040404 0%,#00923f 100%);border-radius:14px;padding:24px;text-align:center;">
+            <p style="margin:0 0 4px;font-size:13px;color:rgba(255,255,255,0.65);font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">Posición actual</p>
+            <p style="margin:0;font-size:56px;font-weight:900;color:#4ade80;font-family:Arial,sans-serif;line-height:1;">🥇</p>
             <p style="margin:6px 0 0;font-size:20px;font-weight:900;color:#FFFFFF;font-family:Arial,sans-serif;">${puntos} puntos</p>
-            <p style="margin:4px 0 0;font-size:13px;color:#93C5FD;font-family:Arial,sans-serif;">Puesto #1 del ranking</p>
+            <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.65);font-family:Arial,sans-serif;">Puesto #1 del ranking</p>
           </td></tr>
         </table>
         <p style="margin:0 0 24px;font-size:14px;color:#6B7280;font-family:Arial,sans-serif;text-align:center;line-height:1.5;">
@@ -686,14 +686,14 @@ function buildTightMatchSection(tightMatch) {
                       <p style="margin:6px 0 0;font-size:12px;font-weight:700;color:#374151;font-family:Arial,sans-serif;">${tightMatch.home_team}</p>
                     </td>
                     <td width="22%" align="center">
-                      <p style="margin:0;font-size:40px;font-weight:900;color:#001A4B;font-family:Arial,sans-serif;letter-spacing:2px;line-height:1;">${tightMatch.resultado_local} - ${tightMatch.resultado_visitante}</p>
+                      <p style="margin:0;font-size:40px;font-weight:900;color:#040404;font-family:Arial,sans-serif;letter-spacing:2px;line-height:1;">${tightMatch.resultado_local} - ${tightMatch.resultado_visitante}</p>
                     </td>
                     <td width="27%" align="center">
                       <p style="margin:0;font-size:36px;line-height:1;">${awayFlag}</p>
                       <p style="margin:6px 0 0;font-size:12px;font-weight:700;color:#374151;font-family:Arial,sans-serif;">${tightMatch.away_team}</p>
                     </td>
                     <td width="24%" style="padding-left:12px;border-left:1px solid #e5e7eb;vertical-align:middle;">
-                      <p style="margin:0;font-size:12px;font-weight:700;color:#2563eb;font-family:Arial,sans-serif;line-height:1.4;">${hitsText}</p>
+                      <p style="margin:0;font-size:12px;font-weight:700;color:#00923f;font-family:Arial,sans-serif;line-height:1.4;">${hitsText}</p>
                     </td>
                   </tr>
                 </table>
@@ -731,7 +731,7 @@ function buildUpcomingSection(upcomingMatches, appUrl) {
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
               ${badgeHtml}
               <tr>
-                <td bgcolor="#FFF8F0" style="padding:16px 16px;">
+                <td bgcolor="#f0faf4" style="padding:16px 16px;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                       <td style="font-size:22px;line-height:1;width:28px;">${homeFlag}</td>
@@ -740,7 +740,7 @@ function buildUpcomingSection(upcomingMatches, appUrl) {
                         <p style="margin:3px 0 0;font-size:11px;color:#6b7280;">${dateStr} &middot; ${timeStr} hs</p>
                       </td>
                       <td align="right" style="width:90px;">
-                        <a href="${appUrl}" style="display:inline-block;background-color:#FFCC00;color:#001A4B;font-size:13px;font-weight:900;text-decoration:none;padding:10px 16px;border-radius:20px;font-family:Arial,sans-serif;white-space:nowrap;">Apostar →</a>
+                        <a href="${appUrl}" style="display:inline-block;background-color:#00923f;color:#ffffff;font-size:13px;font-weight:900;text-decoration:none;padding:10px 16px;border-radius:20px;font-family:Arial,sans-serif;white-space:nowrap;">Apostar →</a>
                       </td>
                       <td style="font-size:22px;line-height:1;width:28px;text-align:right;padding-left:8px;">${awayFlag}</td>
                     </tr>
@@ -775,8 +775,8 @@ const sendWeeklyEmail = async (email, {
     const pendingBadge = pendingBets > 0
         ? `<table cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
             <tr>
-              <td bgcolor="#FFCC00" style="padding:9px 18px;border-radius:20px;">
-                <p style="margin:0;font-size:13px;font-weight:700;color:#001A4B;font-family:Arial,sans-serif;">⚡ Tenés ${pendingBets} pronóstico${pendingBets !== 1 ? 's' : ''} pendiente${pendingBets !== 1 ? 's' : ''} para esta fecha</p>
+              <td bgcolor="#00923f" style="padding:9px 18px;border-radius:20px;">
+                <p style="margin:0;font-size:13px;font-weight:700;color:#ffffff;font-family:Arial,sans-serif;">⚡ Tenés ${pendingBets} pronóstico${pendingBets !== 1 ? 's' : ''} pendiente${pendingBets !== 1 ? 's' : ''} para esta fecha</p>
               </td>
             </tr>
           </table>`
@@ -793,8 +793,8 @@ const sendWeeklyEmail = async (email, {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tu resumen semanal — PRODE Nueva Chicago</title>
 </head>
-<body style="margin:0;padding:0;background-color:#eef2f7;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eef2f7">
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f4">
   <tr>
     <td align="center" style="padding:24px 16px;">
       <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;">
@@ -806,7 +806,7 @@ const sendWeeklyEmail = async (email, {
               <tr>
                 <td>
                   <span style="font-size:22px;vertical-align:middle;">⚽</span>
-                  <strong style="font-size:17px;color:#001A4B;font-family:Arial,sans-serif;vertical-align:middle;"> PRODE Nueva Chicago</strong>
+                  <strong style="font-size:17px;color:#040404;font-family:Arial,sans-serif;vertical-align:middle;"> PRODE Nueva Chicago</strong>
                 </td>
                 <td align="right">
                   <p style="margin:0;font-size:11px;color:#9ca3af;font-family:Arial,sans-serif;">Resumen semanal</p>
@@ -819,10 +819,10 @@ const sendWeeklyEmail = async (email, {
 
         <!-- HERO: background-image con gradiente oscuro overlay -->
         <tr>
-          <td bgcolor="#001A4B" style="background:linear-gradient(to bottom,rgba(0,10,50,0.42) 0%,rgba(0,10,70,0.90) 100%),url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&q=90&fit=crop&h=360') center/cover no-repeat;padding:72px 28px 42px;">
-            <p style="margin:0 0 10px;font-size:11px;font-weight:700;color:#FFCC00;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2.5px;">MUNDIAL 2026</p>
+          <td bgcolor="#040404" style="background:linear-gradient(to bottom,rgba(0,8,3,0.55) 0%,rgba(0,20,8,0.88) 100%),url('https://chicago.prodecaballito.com/hero-estadio.png') center/cover no-repeat;padding:72px 28px 42px;">
+            <p style="margin:0 0 10px;font-size:11px;font-weight:700;color:#4ade80;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2.5px;">MUNDIAL 2026</p>
             <h1 style="margin:0;font-size:34px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">ARRANCA UNA NUEVA SEMANA</h1>
-            <h1 style="margin:4px 0 18px;font-size:34px;font-weight:900;color:#FFCC00;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">DE MUNDIAL</h1>
+            <h1 style="margin:4px 0 18px;font-size:34px;font-weight:900;color:#4ade80;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">DE MUNDIAL</h1>
             <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.82);font-family:Arial,sans-serif;">Así viene tu prode y lo que se juega esta semana.</p>
             ${pendingBadge}
           </td>
@@ -831,8 +831,8 @@ const sendWeeklyEmail = async (email, {
         <!-- PERSONALIZATION -->
         <tr>
           <td style="padding:22px 24px 0;">
-            <p style="margin:0 0 2px;font-size:16px;color:#111827;font-family:Arial,sans-serif;font-weight:600;">Hola, <strong style="color:#001A4B;">${userName}</strong> 👋</p>
-            <p style="margin:0 0 2px;font-size:14px;color:#6b7280;font-family:Arial,sans-serif;">Estás <strong style="color:#001A4B;">${userPosition}°</strong> de ${totalPlayers} jugadores.</p>
+            <p style="margin:0 0 2px;font-size:16px;color:#111827;font-family:Arial,sans-serif;font-weight:600;">Hola, <strong style="color:#040404;">${userName}</strong> 👋</p>
+            <p style="margin:0 0 2px;font-size:14px;color:#6b7280;font-family:Arial,sans-serif;">Estás <strong style="color:#040404;">${userPosition}°</strong> de ${totalPlayers} jugadores.</p>
             ${diferencia}
           </td>
         </tr>
@@ -842,21 +842,21 @@ const sendWeeklyEmail = async (email, {
           <td style="padding:18px 24px 24px;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td width="31%" align="center" bgcolor="#f8faff" style="padding:22px 8px;border-radius:12px;">
+                <td width="31%" align="center" bgcolor="#f0faf4" style="padding:22px 8px;border-radius:12px;">
                   <p style="margin:0;font-size:28px;line-height:1;">🏆</p>
-                  <p style="margin:10px 0 2px;font-size:36px;font-weight:900;color:#001A4B;font-family:Arial,sans-serif;line-height:1;">${userPosition}°</p>
+                  <p style="margin:10px 0 2px;font-size:36px;font-weight:900;color:#040404;font-family:Arial,sans-serif;line-height:1;">${userPosition}°</p>
                   <p style="margin:0;font-size:10px;color:#6b7280;font-family:Arial,sans-serif;line-height:1.5;text-transform:uppercase;letter-spacing:0.3px;">Tu posición<br>de ${totalPlayers}</p>
                 </td>
                 <td width="4%"></td>
-                <td width="31%" align="center" bgcolor="#f8faff" style="padding:22px 8px;border-radius:12px;">
+                <td width="31%" align="center" bgcolor="#f0faf4" style="padding:22px 8px;border-radius:12px;">
                   <p style="margin:0;font-size:28px;line-height:1;">🎯</p>
-                  <p style="margin:10px 0 2px;font-size:36px;font-weight:900;color:#001A4B;font-family:Arial,sans-serif;line-height:1;">${userPoints} <span style="font-size:18px;font-weight:700;">pts</span></p>
+                  <p style="margin:10px 0 2px;font-size:36px;font-weight:900;color:#040404;font-family:Arial,sans-serif;line-height:1;">${userPoints} <span style="font-size:18px;font-weight:700;">pts</span></p>
                   <p style="margin:0;font-size:10px;color:#6b7280;font-family:Arial,sans-serif;line-height:1.5;text-transform:uppercase;letter-spacing:0.3px;">Tus puntos</p>
                 </td>
                 <td width="4%"></td>
-                <td width="31%" align="center" bgcolor="#f8faff" style="padding:22px 8px;border-radius:12px;">
+                <td width="31%" align="center" bgcolor="#f0faf4" style="padding:22px 8px;border-radius:12px;">
                   <p style="margin:0;font-size:28px;line-height:1;">📅</p>
-                  <p style="margin:10px 0 2px;font-size:22px;font-weight:900;color:#001A4B;font-family:Arial,sans-serif;line-height:1;">${bestRound}</p>
+                  <p style="margin:10px 0 2px;font-size:22px;font-weight:900;color:#040404;font-family:Arial,sans-serif;line-height:1;">${bestRound}</p>
                   <p style="margin:0;font-size:10px;color:#6b7280;font-family:Arial,sans-serif;line-height:1.5;text-transform:uppercase;letter-spacing:0.3px;">Tu mejor fecha<br>(${bestRoundPoints} pts)</p>
                 </td>
               </tr>
@@ -871,7 +871,7 @@ const sendWeeklyEmail = async (email, {
         <!-- CTA PRINCIPAL -->
         <tr>
           <td style="padding:4px 24px 32px;">
-            <a href="${appUrl}" style="display:block;background-color:#001A4B;color:#ffffff;text-decoration:none;padding:18px 32px;border-radius:10px;font-size:16px;font-weight:700;font-family:Arial,sans-serif;text-align:center;">
+            <a href="${appUrl}" style="display:block;background-color:#00923f;color:#ffffff;text-decoration:none;padding:18px 32px;border-radius:10px;font-size:16px;font-weight:700;font-family:Arial,sans-serif;text-align:center;">
               Completá tus pronósticos ahora →
             </a>
           </td>
@@ -881,7 +881,7 @@ const sendWeeklyEmail = async (email, {
         <tr>
           <td align="center" bgcolor="#f9fafb" style="padding:22px 24px 26px;border-top:1px solid #f0f4fb;">
             <p style="margin:0;font-size:13px;color:#4b5563;font-family:Arial,sans-serif;line-height:1.7;">
-              Gracias por jugar en <strong>PRODE Nueva Chicago</strong> 💙<br>Esta semana puede ser la tuya.
+              Gracias por jugar en <strong>PRODE Nueva Chicago</strong> 💚<br>Esta semana puede ser la tuya.
             </p>
             <p style="margin:14px 0 0;font-size:11px;color:#9ca3af;font-family:Arial,sans-serif;">
               <a href="${unsubscribeUrl}" style="color:#9ca3af;text-decoration:underline;">Cancelar suscripción</a>
