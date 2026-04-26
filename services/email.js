@@ -393,14 +393,21 @@ const sendReminderEmail = async (reminder) => {
   <tr><td align="center" style="padding:40px 20px;">
     <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
-      <!-- Header -->
-      <tr><td align="center" style="padding-bottom:24px;">
-        <p style="margin:0;font-size:40px;line-height:1;">⏰</p>
-        <h1 style="color:#ffffff;margin:10px 0 0;font-size:26px;font-weight:800;font-family:Arial,sans-serif;">PRODE Nueva Chicago</h1>
-        <p style="color:#ffffff;margin:6px 0 0;font-size:14px;font-weight:600;font-family:Arial,sans-serif;">
-          Recordatorio — ${remind_minutes} min antes del partido
-        </p>
-      </td></tr>
+      <!-- HERO IMAGE -->
+      <tr>
+        <td bgcolor="#040404" style="background-image:url('https://chicago.prodecaballito.com/hero-hincha.png');background-size:cover;background-position:center 25%;background-color:#040404;border-radius:16px 16px 0 0;overflow:hidden;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background:linear-gradient(to bottom,rgba(0,8,3,0.50) 0%,rgba(0,15,5,0.88) 100%);padding:48px 28px 36px;text-align:center;">
+                <p style="margin:0;font-size:11px;font-weight:700;color:#4ade80;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2.5px;">⏰ RECORDATORIO</p>
+                <h1 style="margin:10px 0 4px;font-size:32px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">EL PARTIDO</h1>
+                <h1 style="margin:0 0 12px;font-size:32px;font-weight:900;color:#4ade80;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">YA ARRANCA</h1>
+                <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.70);font-family:Arial,sans-serif;">PRODE Nueva Chicago · ${remind_minutes} min</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
 
       <!-- Main card -->
       <tr><td style="background-color:#ffffff;border-radius:20px;overflow:hidden;">
@@ -464,6 +471,22 @@ const sendReminderEmail = async (reminder) => {
         </table>
       </td></tr>
 
+      <!-- LIFESTYLE CTA -->
+      <tr>
+        <td bgcolor="#040404" style="background-image:url('https://chicago.prodecaballito.com/hero-estadio.png');background-size:cover;background-position:center;background-color:#040404;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background:linear-gradient(to bottom,rgba(0,0,0,0.52) 0%,rgba(0,0,0,0.82) 100%);padding:36px 28px;text-align:center;">
+                <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#4ade80;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2px;">🐂 FAMILIA VERDINEGRA</p>
+                <p style="margin:0 0 14px;font-size:22px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.2;text-transform:uppercase;">LLEVÁ TU PRODE<br>A LA TRIBUNA</p>
+                <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.68);font-family:Arial,sans-serif;">Compartilo con los del barrio y que compita toda la familia Chicago.</p>
+                <a href="https://chicago.prodecaballito.com" style="display:inline-block;background-color:#00923f;color:#ffffff;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:900;padding:14px 32px;border-radius:50px;text-transform:uppercase;letter-spacing:0.5px;">🐂 INVITÁ A UN AMIGO →</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
       <!-- Footer -->
       <tr><td align="center" style="padding-top:20px;">
         <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;font-family:Arial,sans-serif;">
@@ -516,16 +539,22 @@ const sendResultEmail = async ({ userEmail, userName, homeTeam, awayTeam, result
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr><td align="center" style="padding:32px 16px;">
     <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
-      <!-- Header -->
-      <tr><td style="background-color:#040404;padding:28px 32px;text-align:center;">
-        <p style="margin:0;font-size:24px;font-weight:900;color:#FFFFFF;font-family:Arial,sans-serif;letter-spacing:1px;">⚽ PRODE Nueva Chicago</p>
-        <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,0.65);font-family:Arial,sans-serif;">Resultado publicado</p>
-      </td></tr>
-      <!-- Score banner -->
-      <tr><td style="background-color:#00923f;padding:20px 32px;text-align:center;">
-        <p style="margin:0;font-size:13px;font-weight:bold;color:rgba(255,255,255,0.75);font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">${homeTeam} vs ${awayTeam}</p>
-        <p style="margin:8px 0 0;font-size:48px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;letter-spacing:4px;">${resultLocal} — ${resultVisitante}</p>
-      </td></tr>
+      <!-- HERO IMAGE -->
+      <tr>
+        <td bgcolor="#040404" style="background-image:url('https://chicago.prodecaballito.com/hero-hincha.png');background-size:cover;background-position:center 25%;background-color:#040404;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background:linear-gradient(to bottom,rgba(0,8,3,0.50) 0%,rgba(0,15,5,0.88) 100%);padding:44px 28px 32px;text-align:center;">
+                <p style="margin:0;font-size:11px;font-weight:700;color:#4ade80;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2.5px;">⚽ RESULTADO PUBLICADO</p>
+                <h1 style="margin:10px 0 4px;font-size:32px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">${homeTeam}</h1>
+                <h1 style="margin:0 0 4px;font-size:48px;font-weight:900;color:#4ade80;font-family:Arial,sans-serif;line-height:1;letter-spacing:4px;">${resultLocal} — ${resultVisitante}</h1>
+                <h1 style="margin:0 0 12px;font-size:32px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">${awayTeam}</h1>
+                <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.68);font-family:Arial,sans-serif;">PRODE Nueva Chicago</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
       <!-- Body -->
       <tr><td style="background-color:#FFFFFF;padding:28px 32px;">
         <p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:#040404;font-family:Arial,sans-serif;">Hola, ${userName}!</p>
@@ -538,6 +567,21 @@ const sendResultEmail = async ({ userEmail, userName, homeTeam, awayTeam, result
           </td></tr>
         </table>
       </td></tr>
+      <!-- LIFESTYLE CTA -->
+      <tr>
+        <td bgcolor="#040404" style="background-image:url('https://chicago.prodecaballito.com/hero-estadio.png');background-size:cover;background-position:center;background-color:#040404;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background:linear-gradient(to bottom,rgba(0,0,0,0.52) 0%,rgba(0,0,0,0.82) 100%);padding:36px 28px;text-align:center;">
+                <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#4ade80;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2px;">🐂 FAMILIA VERDINEGRA</p>
+                <p style="margin:0 0 14px;font-size:22px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.2;text-transform:uppercase;">LLEVÁ TU PRODE<br>A LA TRIBUNA</p>
+                <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.68);font-family:Arial,sans-serif;">Compartilo con los del barrio y que compita toda la familia Chicago.</p>
+                <a href="https://chicago.prodecaballito.com" style="display:inline-block;background-color:#00923f;color:#ffffff;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:900;padding:14px 32px;border-radius:50px;text-transform:uppercase;letter-spacing:0.5px;">🐂 INVITÁ A UN AMIGO →</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
       <!-- Footer -->
       <tr><td style="background-color:#F8FAFC;padding:16px 32px;text-align:center;">
         <p style="margin:0;font-size:11px;color:#9CA3AF;font-family:Arial,sans-serif;">chicago.prodecaballito.com</p>
@@ -561,16 +605,22 @@ const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayT
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr><td align="center" style="padding:32px 16px;">
     <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
-      <!-- Header -->
-      <tr><td style="background-color:#040404;padding:32px 32px 24px;text-align:center;">
-        <p style="margin:0;font-size:48px;line-height:1;">🔥</p>
-        <p style="margin:10px 0 4px;font-size:22px;font-weight:900;color:#4ade80;font-family:Arial,sans-serif;letter-spacing:1px;">¡NUEVO LÍDER!</p>
-        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.65);font-family:Arial,sans-serif;">PRODE Nueva Chicago</p>
-      </td></tr>
-      <!-- Banner resultado -->
-      <tr><td style="background-color:#00923f;padding:14px 32px;text-align:center;">
-        <p style="margin:0;font-size:12px;font-weight:bold;color:rgba(255,255,255,0.85);font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">⚽ ${homeTeam} ${resultLocal}–${resultVisitante} ${awayTeam}</p>
-      </td></tr>
+      <!-- HERO IMAGE -->
+      <tr>
+        <td bgcolor="#040404" style="background-image:url('https://chicago.prodecaballito.com/hero-hincha.png');background-size:cover;background-position:center 20%;background-color:#040404;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background:linear-gradient(to bottom,rgba(0,8,3,0.48) 0%,rgba(0,10,4,0.90) 100%);padding:48px 28px 36px;text-align:center;">
+                <p style="margin:0;font-size:40px;line-height:1;">🔥</p>
+                <p style="margin:12px 0 4px;font-size:11px;font-weight:700;color:#4ade80;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2.5px;">PRODE Nueva Chicago</p>
+                <h1 style="margin:8px 0 6px;font-size:36px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">¡NUEVO</h1>
+                <h1 style="margin:0 0 12px;font-size:36px;font-weight:900;color:#4ade80;font-family:Arial,sans-serif;line-height:1.1;text-transform:uppercase;">LÍDER!</h1>
+                <p style="margin:0;display:inline-block;background-color:#00923f;color:#fff;font-size:13px;font-weight:700;font-family:Arial,sans-serif;padding:6px 18px;border-radius:20px;">⚽ ${homeTeam} ${resultLocal}–${resultVisitante} ${awayTeam}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
       <!-- Body -->
       <tr><td style="background-color:#FFFFFF;padding:32px 32px 28px;">
         <p style="margin:0 0 8px;font-size:18px;font-weight:900;color:#040404;font-family:Arial,sans-serif;">¡Hola, ${userName}! 👋</p>
@@ -595,6 +645,21 @@ const sendNewLeaderEmail = async ({ userEmail, userName, puntos, homeTeam, awayT
           </td></tr>
         </table>
       </td></tr>
+      <!-- LIFESTYLE CTA -->
+      <tr>
+        <td bgcolor="#040404" style="background-image:url('https://chicago.prodecaballito.com/hero-estadio.png');background-size:cover;background-position:center;background-color:#040404;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background:linear-gradient(to bottom,rgba(0,0,0,0.52) 0%,rgba(0,0,0,0.82) 100%);padding:36px 28px;text-align:center;">
+                <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#4ade80;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:2px;">🐂 FAMILIA VERDINEGRA</p>
+                <p style="margin:0 0 14px;font-size:22px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;line-height:1.2;text-transform:uppercase;">LLEVÁ TU PRODE<br>A LA TRIBUNA</p>
+                <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.68);font-family:Arial,sans-serif;">Compartilo con los del barrio y que compita toda la familia Chicago.</p>
+                <a href="https://chicago.prodecaballito.com" style="display:inline-block;background-color:#00923f;color:#ffffff;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:900;padding:14px 32px;border-radius:50px;text-transform:uppercase;letter-spacing:0.5px;">🐂 INVITÁ A UN AMIGO →</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
       <!-- Footer -->
       <tr><td style="background-color:#F8FAFC;padding:16px 32px;text-align:center;">
         <p style="margin:0;font-size:11px;color:#9CA3AF;font-family:Arial,sans-serif;">chicago.prodecaballito.com</p>
